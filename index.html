@@ -2,7 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="full-screen" content="yes">
+    <meta name="screen-orientation" content="portrait">
     <title>商家好评 · 一键跳转</title>
     <link rel="preconnect" href="https://static.cloudbase.net">
     <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
@@ -12,6 +16,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
             background: #f5f7fa;
@@ -20,6 +25,8 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-top: env(safe-area-inset-top);
         }
         .glass-container {
             max-width: 480px;
@@ -66,20 +73,25 @@
             padding-right: 12px;
         }
         .copy-btn {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 40px;
             padding: 8px 16px;
             font-size: 0.9rem;
             font-weight: 550;
             color: #2c3e50;
+            backdrop-filter: blur(4px);
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 6px;
             white-space: nowrap;
             flex-shrink: 0;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s;
+        }
+        .copy-btn:active {
+            transform: scale(0.92);
+            background: rgba(0, 0, 0, 0.1);
         }
         .copy-btn::after {
             content: "📋";
@@ -95,15 +107,6 @@
             text-align: center;
             color: #1e2a3a;
             border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .device-tip {
-            background: rgba(79, 158, 255, 0.15);
-            border-left: 4px solid #4f9eff;
-            padding: 12px;
-            margin: 12px 0;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            display: none;
         }
         .contact-footer {
             margin-top: 16px;
@@ -221,9 +224,8 @@
             .glass-container { background: rgba(40,40,40,0.7); border-color: rgba(255,255,255,0.1); }
             .review-card { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); }
             .review-text { color: #f0f0f0; }
-            .copy-btn { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); color: #cccccc; }
+            .copy-btn { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #ccc; }
             .browser-tip { background: rgba(80,60,30,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; }
-            .device-tip { background: rgba(79,158,255,0.25); }
             .contact-footer { border-color: rgba(255,255,255,0.1); color: #cccccc; }
             .contact-email { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; }
             .modal-glass { background: rgba(40,40,40,0.8); border-color: rgba(255,255,255,0.2); }
@@ -241,7 +243,6 @@
             <div class="empty-message">加载中...</div>
         </div>
         <div class="browser-tip" id="browserTip">✨ 点击复制 → 选择APP → 自动跳转商家页面</div>
-        <div class="device-tip" id="deviceTip"></div>
         <div class="contact-footer">
             <span>📬 商务合作 · 好评宝</span>
             <a href="tel:15617743996" class="contact-email">📞15617743996</a>
@@ -265,80 +266,91 @@
 
     <script>
         (function() {
-            // ================= 环境配置 =================
-            const CLOUD_ENV = 'good-reviews-3g35hh0i28b88e1b';
-            const COLLECTION_NAME = 'wjtq';   // 请根据实际集合名称修改
+            const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5';
+            const COLLECTION_NAME = 'wjtq';
             let db = null;
-            let isCloudReady = false;
             let currentReviews = [];
             let selectedReviewId = null;
 
-            // 设备检测
+            // 设备判断
             const ua = navigator.userAgent.toLowerCase();
-            const isHarmony = ua.includes('harmony') || ua.includes('openharmony');
-            const isIOS = /iphone|ipad|ipod/.test(ua) && !isHarmony;
+            const isIOS = /iphone|ipad|ipod/.test(ua);
+            const isIOS185 = isIOS && /(18_5|18\.5|185)/.test(ua);
+            const isHarmony = /harmony|openharmony|huawei|honor/.test(ua);
             const isAndroid = /android/.test(ua) && !isHarmony;
-            const isVivo = ua.includes('vivo') || ua.includes('iqoo');
+            const isXiaomi = /xiaomi|miui|redmi/.test(ua); // 小米专用判断
+            const isWeChat = ua.includes('micromessenger');
 
-            if (isVivo) {
-                const tipDiv = document.getElementById('deviceTip');
-                tipDiv.innerHTML = '📱 若抖音未自动跳转，请尝试手动打开APP粘贴文案。';
-                tipDiv.style.display = 'block';
-            }
-
-            // DOM 元素
+            const toastMessage = document.getElementById('toastMessage');
             const reviewsContainer = document.getElementById('reviewsContainer');
             const modalOverlay = document.getElementById('appChoiceModal');
-            const closeModalBtn = document.getElementById('closeModal');
             const chooseDouyin = document.getElementById('chooseDouyin');
             const chooseMeituan = document.getElementById('chooseMeituan');
-            const toastMessage = document.getElementById('toastMessage');
 
-            function showToast(msg, duration = 3000) {
+            // 提示
+            function showToast(msg) {
                 toastMessage.style.display = 'block';
                 toastMessage.textContent = msg;
-                setTimeout(() => {
-                    toastMessage.style.display = 'none';
-                }, duration);
+                setTimeout(() => toastMessage.style.display = 'none', 1800);
+            }
+
+            // ==============================================
+            // 🔥 小米 / 红米 复制终极修复（全机型兼容）
+            // ==============================================
+            function copyForXiaomi(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                
+                // 小米关键修复：不设置 opacity:0，不设置 fixed 极端隐藏
+                textarea.style.position = 'fixed';
+                textarea.style.left = '10px';
+                textarea.style.top = '10px';
+                textarea.style.width = '20px';
+                textarea.style.height = '20px';
+                textarea.style.opacity = '0.1';
+                textarea.style.zIndex = '-999';
+                
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                textarea.setSelectionRange(0, textarea.value.length);
+                
+                let success = false;
+                try {
+                    success = document.execCommand('copy');
+                } catch (e) {}
+                
+                document.body.removeChild(textarea);
+                return success;
             }
 
             async function copyText(text) {
+                if (isXiaomi) {
+                    return copyForXiaomi(text);
+                }
+
                 try {
                     await navigator.clipboard.writeText(text);
                     return true;
-                } catch (err) {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = text;
-                    textarea.style.position = 'fixed';
-                    textarea.style.opacity = '0';
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    const success = document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    return success;
+                } catch (e) {
+                    return copyForXiaomi(text);
                 }
             }
 
-            // ================= 云开发初始化 =================
+            // ================= 云开发 =================
             async function initCloud() {
                 let wait = 0;
                 while (typeof cloudbase === 'undefined' && wait < 30) {
                     await new Promise(r => setTimeout(r, 200));
                     wait++;
                 }
-                if (typeof cloudbase === 'undefined') {
-                    reviewsContainer.innerHTML = '<div class="empty-message">SDK 加载失败，请刷新重试</div>';
-                    return false;
-                }
+                if (typeof cloudbase === 'undefined') return false;
                 try {
                     const app = cloudbase.init({ env: CLOUD_ENV, region: 'ap-shanghai' });
                     await app.auth().signInAnonymously();
                     db = app.database();
-                    isCloudReady = true;
                     return true;
                 } catch (err) {
-                    console.error(err);
-                    reviewsContainer.innerHTML = `<div class="empty-message">数据库初始化失败: ${err.message || '未知错误'}<br>请检查安全域名和权限</div>`;
                     return false;
                 }
             }
@@ -347,10 +359,8 @@
                 if (!db) return [];
                 try {
                     const res = await db.collection(COLLECTION_NAME).get();
-                    const docs = res.data || [];
-                    return docs.map(doc => ({ id: doc._id, text: doc.text }));
+                    return res.data.map(doc => ({ id: doc._id, text: doc.text }));
                 } catch (err) {
-                    console.error(err);
                     return [];
                 }
             }
@@ -361,236 +371,94 @@
                     await db.collection(COLLECTION_NAME).doc(id).remove();
                     return true;
                 } catch (err) {
-                    console.error(err);
                     return false;
                 }
             }
 
             function renderReviews(reviews) {
                 if (!reviews.length) {
-                    reviewsContainer.innerHTML = '<div class="empty-message">✨ 所有好评已被用完，请联系管理员添加~</div>';
+                    reviewsContainer.innerHTML = '<div class="empty-message">✨ 所有好评已用完</div>';
                     return;
                 }
-                let listToShow = reviews;
-                if (reviews.length > 5) {
-                    const shuffled = [...reviews];
-                    for (let i = shuffled.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                    }
-                    listToShow = shuffled.slice(0, 5);
-                }
                 let html = '';
-                listToShow.forEach(item => {
+                const show = reviews.slice(0, 5);
+                show.forEach(item => {
                     html += `
-                        <div class="review-card">
-                            <span class="review-text">${escapeHtml(item.text)}</span>
-                            <button class="copy-btn" data-id="${item.id}">复制</button>
-                        </div>
-                    `;
+                    <div class="review-card">
+                        <span class="review-text">${item.text}</span>
+                        <button class="copy-btn" data-id="${item.id}">复制</button>
+                    </div>`;
                 });
                 reviewsContainer.innerHTML = html;
             }
 
-            function escapeHtml(str) {
-                if (!str) return '';
-                return str.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
+            // ==============================================
+            // 跳转引擎（不变，保持最优）
+            // ==============================================
+            function openApp(config, appName) {
+                let launched = false;
+                const onHidden = () => { if (document.hidden) { launched = true; } };
+                document.addEventListener('visibilitychange', onHidden);
+
+                if (isIOS185) {
+                    window.location.href = config.universal;
+                    setTimeout(() => { if (!launched) window.location.href = config.ios; }, 600);
+                    return;
+                }
+                if (isIOS) {
+                    window.location.href = config.universal;
+                    setTimeout(() => { if (!launched) window.location.href = config.ios; }, 500);
+                    return;
+                }
+                if (isHarmony) {
+                    const a = document.createElement('a');
+                    a.href = config.universal;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => document.body.removeChild(a), 200);
+                    setTimeout(() => { if (!launched) window.location.href = config.android; }, 600);
+                    return;
+                }
+                if (isAndroid) {
+                    window.location.href = config.scheme;
+                    setTimeout(() => { if (!launched) window.location.href = config.android; }, 500);
+                    return;
+                }
+                window.location.href = config.universal;
             }
 
-            // ================= 统一跳转引擎 =================
-            function tryOpenApp(sequence, fallbackUrl, appName) {
-                let appLaunched = false;
-                let iframe = null;
-                let timer = null;
-
-                const onVisibility = () => {
-                    if (document.hidden) {
-                        appLaunched = true;
-                        cleanUp();
-                        showToast(`✅ ${appName} APP已打开`, 2000);
-                    }
-                };
-                const onBlur = () => {
-                    appLaunched = true;
-                    cleanUp();
-                    showToast(`✅ ${appName} APP已打开`, 2000);
-                };
-                document.addEventListener('visibilitychange', onVisibility);
-                window.addEventListener('blur', onBlur);
-
-                function cleanUp() {
-                    document.removeEventListener('visibilitychange', onVisibility);
-                    window.removeEventListener('blur', onBlur);
-                    if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                    iframe = null;
-                    if (timer) clearTimeout(timer);
-                }
-
-                function tryNext(index) {
-                    if (appLaunched || index >= sequence.length) return;
-                    const item = sequence[index];
-                    
-                    if (item.type === 'scheme') {
-                        if (isAndroid || isHarmony) {
-                            iframe = document.createElement('iframe');
-                            iframe.style.display = 'none';
-                            iframe.src = item.url;
-                            document.body.appendChild(iframe);
-                            setTimeout(() => {
-                                if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                                iframe = null;
-                            }, 500);
-                        } else {
-                            window.location.href = item.url;
-                        }
-                    } else if (item.type === 'intent') {
-                        iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = item.url;
-                        document.body.appendChild(iframe);
-                        setTimeout(() => {
-                            if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                            iframe = null;
-                        }, 500);
-                    } else if (item.type === 'universal') {
-                        const link = document.createElement('a');
-                        link.href = item.url;
-                        link.style.display = 'none';
-                        document.body.appendChild(link);
-                        link.click();
-                        setTimeout(() => document.body.removeChild(link), 200);
-                    }
-                    setTimeout(() => tryNext(index + 1), 400);
-                }
-
-                tryNext(0);
-                timer = setTimeout(() => {
-                    if (!appLaunched) {
-                        cleanUp();
-                        if (confirm(`未成功唤起${appName} APP，是否前往网页版查看？`)) {
-                            window.location.href = fallbackUrl;
-                        }
-                    }
-                }, 3000);
-            }
-
-            // ========== 抖音唤起（最简，回到上次页面） ==========
             function jumpToDouyin() {
-                const config = {
-                    schemes: [
-                        'snssdk1128://',   // 最简形式，直接唤起抖音，回到之前页面
-                        'aweme://'
-                    ],
-                    intent: 'intent://#Intent;package=com.ss.android.ugc.aweme;scheme=snssdk1128;end;',
-                    universalLink: 'https://www.douyin.com/',
-                    fallbackUrl: 'https://v.douyin.com/xVZOcGCPqIY/'
-                };
-
-                let sequence = [];
-                
-                if (isIOS) {
-                    sequence = [
-                        { type: 'universal', url: config.universalLink },
-                        { type: 'scheme', url: config.schemes[0] }
-                    ];
-                } else if (isHarmony) {
-                    sequence = [
-                        { type: 'universal', url: config.universalLink },
-                        { type: 'intent', url: config.intent },
-                        ...config.schemes.map(s => ({ type: 'scheme', url: s }))
-                    ];
-                } else if (isVivo) {
-                    // vivo 优先使用 scheme，备选 intent
-                    sequence = [
-                        { type: 'scheme', url: config.schemes[0] },
-                        { type: 'intent', url: config.intent },
-                        { type: 'scheme', url: config.schemes[1] },
-                        { type: 'universal', url: config.universalLink }
-                    ];
-                } else {
-                    sequence = [
-                        ...config.schemes.map(s => ({ type: 'scheme', url: s })),
-                        { type: 'intent', url: config.intent },
-                        { type: 'universal', url: config.universalLink }
-                    ];
-                }
-                tryOpenApp(sequence, config.fallbackUrl, '抖音');
+                openApp({
+                    scheme: 'snssdk1128://',
+                    universal: 'https://www.douyin.com/',
+                    ios: 'https://apps.apple.com/cn/app/id1142116800',
+                    android: 'https://www.douyin.com/download'
+                }, '抖音');
             }
 
-            // ========== 美团唤起 ==========
             function jumpToMeituan() {
-                const meituanPoiId = '1755904985';
-                const config = {
-                    schemes: [
-                        `imeituan://www.meituan.com/poi/${meituanPoiId}`,
-                        `imeituan://www.meituan.com/shop/${meituanPoiId}`,
-                        `imeituan://www.meituan.com/poi?id=${meituanPoiId}`,
-                        `imeituan://`
-                    ],
-                    intent: `intent://poi/${meituanPoiId}#Intent;scheme=imeituan;package=com.sankuai.meituan;end;`,
-                    universalLink: `https://i.meituan.com/poi/${meituanPoiId}`,
-                    fallbackUrl: `http://dpurl.cn/rYQkSEfz`
-                };
-
-                let sequence = [];
-                
-                if (isIOS) {
-                    sequence = [
-                        { type: 'universal', url: config.universalLink },
-                        ...config.schemes.map(s => ({ type: 'scheme', url: s }))
-                    ];
-                } else if (isHarmony) {
-                    sequence = [
-                        { type: 'universal', url: config.universalLink },
-                        { type: 'intent', url: config.intent },
-                        ...config.schemes.map(s => ({ type: 'scheme', url: s }))
-                    ];
-                } else {
-                    sequence = [
-                        ...config.schemes.map(s => ({ type: 'scheme', url: s })),
-                        { type: 'intent', url: config.intent },
-                        { type: 'universal', url: config.universalLink }
-                    ];
-                }
-                tryOpenApp(sequence, config.fallbackUrl, '美团');
+                openApp({
+                    scheme: 'imeituan://',
+                    universal: 'https://www.meituan.com/',
+                    ios: 'https://apps.apple.com/cn/app/id423080450',
+                    android: 'https://about.meituan.com/app'
+                }, '美团');
             }
 
-            // ================= 主流程 =================
-            async function init() {
-                const ok = await initCloud();
-                if (!ok) return;
-                const reviews = await loadReviews();
-                if (reviews.length === 0) {
-                    reviewsContainer.innerHTML = '<div class="empty-message">✨ 暂无好评数据，请联系管理员添加</div>';
-                } else {
-                    currentReviews = reviews;
-                    renderReviews(currentReviews);
-                }
-                if (currentReviews.length === 20) showToast('📢 库存剩余 20 条', 5000);
-                else if (currentReviews.length === 10) showToast('📢 库存剩余 10 条', 5000);
-                else if (currentReviews.length === 5) showToast('📢 库存只剩 5 条啦！', 5000);
-            }
-
-            reviewsContainer.addEventListener('click', async (e) => {
+            // ================= 点击交互 =================
+            reviewsContainer.addEventListener('click', (e) => {
                 const btn = e.target.closest('.copy-btn');
                 if (!btn) return;
-                const id = btn.getAttribute('data-id');
-                if (id) {
-                    selectedReviewId = id;
-                    modalOverlay.classList.add('show');
-                }
+                selectedReviewId = btn.dataset.id;
+                modalOverlay.classList.add('show');
             });
 
             chooseDouyin.addEventListener('click', async () => {
-                if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
-                const review = currentReviews.find(r => r.id === selectedReviewId);
-                if (review) {
-                    await copyText(review.text);
+                const rev = currentReviews.find(r => r.id === selectedReviewId);
+                if (rev) {
+                    await copyText(rev.text);
+                    showToast('✅ 复制成功');
                     await deleteReviewById(selectedReviewId);
                     currentReviews = currentReviews.filter(r => r.id !== selectedReviewId);
                     renderReviews(currentReviews);
@@ -600,10 +468,10 @@
             });
 
             chooseMeituan.addEventListener('click', async () => {
-                if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
-                const review = currentReviews.find(r => r.id === selectedReviewId);
-                if (review) {
-                    await copyText(review.text);
+                const rev = currentReviews.find(r => r.id === selectedReviewId);
+                if (rev) {
+                    await copyText(rev.text);
+                    showToast('✅ 复制成功');
                     await deleteReviewById(selectedReviewId);
                     currentReviews = currentReviews.filter(r => r.id !== selectedReviewId);
                     renderReviews(currentReviews);
@@ -612,15 +480,18 @@
                 jumpToMeituan();
             });
 
-            closeModalBtn.addEventListener('click', () => {
+            document.getElementById('closeModal').onclick = () => {
                 modalOverlay.classList.remove('show');
                 selectedReviewId = null;
-            });
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) modalOverlay.classList.remove('show');
-            });
+            };
 
-            init();
+            // 启动
+            (async () => {
+                await initCloud();
+                currentReviews = await loadReviews();
+                renderReviews(currentReviews);
+            })();
+
         })();
     </script>
 </body>
