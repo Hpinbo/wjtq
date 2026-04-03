@@ -1,573 +1,142 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>商家好评 · 硬编码测试版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>跳转测试-极简版</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-        }
-        body {
-            background: #f5f7fa;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .glass-container {
-            max-width: 480px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(18px);
-            border-radius: 36px;
-            padding: 24px 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .reviews-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .review-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 28px;
-            padding: 16px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s;
-            animation: cardPop 0.3s ease;
-        }
-        .review-card:active {
-            transform: scale(0.98);
-        }
-        @keyframes cardPop {
-            0% { opacity: 0; transform: translateY(15px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .review-text {
-            font-size: 1rem;
-            line-height: 1.4;
-            color: #1e2a3a;
-            font-weight: 480;
-            flex: 1;
-            padding-right: 12px;
-        }
-        .copy-btn {
-            background: rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 40px;
-            padding: 8px 16px;
-            font-size: 0.9rem;
-            font-weight: 550;
-            color: #2c3e50;
-            backdrop-filter: blur(4px);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-        .copy-btn:active {
-            transform: scale(0.92);
-            background: rgba(0, 0, 0, 0.1);
-        }
-        .copy-btn::after {
-            content: "📋";
-            font-size: 1rem;
-        }
-        .browser-tip {
-            background: rgba(255, 230, 200, 0.7);
-            backdrop-filter: blur(5px);
-            border-radius: 30px;
-            padding: 10px 16px;
-            margin: 10px 0 16px;
-            font-size: 0.85rem;
-            text-align: center;
-            color: #1e2a3a;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .contact-footer {
-            margin-top: 16px;
-            text-align: center;
-            padding: 18px 10px 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            color: #5a6e7c;
-            font-size: 0.95rem;
-        }
-        .contact-email {
-            background: rgba(255, 255, 255, 0.7);
-            display: inline-block;
-            padding: 8px 28px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: #1e2a3a;
-            text-decoration: none;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .modal-glass {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(30px);
-            border-radius: 48px;
-            padding: 32px 24px;
-            width: 300px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transform: scale(0.9);
-            transition: transform 0.2s;
-            text-align: center;
-        }
-        .modal-overlay.show .modal-glass {
-            transform: scale(1);
-        }
-        .modal-title {
-            color: #1e2a3a;
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-        }
-        .app-options {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        .app-btn {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 60px;
-            padding: 16px;
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: #1e2a3a;
-            cursor: pointer;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-        }
-        .app-btn:active {
-            transform: scale(0.96);
-        }
-        .cancel-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 40px;
-            padding: 12px;
-            margin-top: 8px;
-            color: #5a6e7c;
-            cursor: pointer;
-        }
-        .empty-message {
-            text-align: center;
-            padding: 30px 0;
-            color: #5a6e7c;
-            font-style: italic;
-            font-size: 1.2rem;
-        }
-        .toast-message {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            display: none;
-            z-index: 2000;
-            backdrop-filter: blur(10px);
-        }
-        .guide-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .guide-card {
-            background: white;
-            border-radius: 20px;
-            padding: 24px;
-            text-align: center;
-            max-width: 280px;
-            margin: 20px;
-        }
-        .guide-card p {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .guide-card button {
-            background: #007aff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 16px;
-        }
-        @media (prefers-color-scheme: dark) {
-            body { background: #121212; }
-            .glass-container { background: rgba(40,40,40,0.7); border-color: rgba(255,255,255,0.1); }
-            .review-card { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); }
-            .review-text { color: #f0f0f0; }
-            .copy-btn { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #ccc; }
-            .browser-tip { background: rgba(80,60,30,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; }
-            .contact-footer { border-color: rgba(255,255,255,0.1); color: #cccccc; }
-            .contact-email { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; }
-            .modal-glass { background: rgba(40,40,40,0.8); border-color: rgba(255,255,255,0.2); }
-            .modal-title { color: #f0f0f0; }
-            .app-btn { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.2); color: #f0f0f0; }
-            .cancel-btn { border-color: rgba(255,255,255,0.2); color: #cccccc; }
-            .guide-card { background: #1e1e1e; color: white; }
-            .guide-card p { color: #ddd; }
-        }
+        body { padding: 20px; font-family: sans-serif; background: #f0f0f0; }
+        button { display: block; width: 100%; padding: 20px; margin: 20px 0; font-size: 20px; border-radius: 12px; border: none; background: #007aff; color: white; cursor: pointer; }
+        .log { background: #fff; border-radius: 8px; padding: 12px; margin-top: 20px; font-size: 14px; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto; }
+        .title { font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div class="toast-message" id="toastMessage"></div>
-    <div class="guide-overlay" id="guideOverlay">
-        <div class="guide-card">
-            <p>📢 请点击右上角</p>
-            <p>选择「在浏览器中打开」</p>
-            <button onclick="closeGuide()">我知道了</button>
-        </div>
-    </div>
-
-    <div class="glass-container">
-        <div id="reviewsContainer" class="reviews-list">
-            <div class="empty-message">加载中...</div>
-        </div>
-        <div class="browser-tip">✨ 点击复制 → 选择APP → 自动跳转商家页面（硬编码测试版）</div>
-        <div class="contact-footer">
-            <span>📬 商务合作 · 砚拓</span>
-            <a href="tel:15617743996" class="contact-email">📞15617743996</a>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="appChoiceModal">
-        <div class="modal-glass">
-            <div class="modal-title">平台选择</div>
-            <div class="app-options">
-                <div class="app-btn" id="chooseDouyin">抖音</div>
-                <div class="app-btn" id="chooseMeituan">美团</div>
-            </div>
-            <div class="cancel-btn" id="closeModal">取消</div>
-        </div>
+    <button id="btnDouyin">📱 测试抖音跳转</button>
+    <button id="btnMeituan">📱 测试美团跳转</button>
+    <div class="log">
+        <div class="title">📋 操作日志：</div>
+        <div id="logContent">等待操作...</div>
     </div>
 
     <script>
-        (function() {
-            // ================= 模拟好评数据（不依赖云开发） =================
-            const mockReviews = [
-                { id: '1', text: '环境非常好，服务热情，下次还会再来！' },
-                { id: '2', text: '菜品口味很棒，价格实惠，强烈推荐！' },
-                { id: '3', text: '位置好找，停车方便，体验满分。' },
-                { id: '4', text: '店员态度超好，卫生干净，五星好评。' },
-                { id: '5', text: '性价比很高，会推荐给朋友。' }
-            ];
-            let currentReviews = [...mockReviews];
-            let selectedReviewId = null;
+        const logDiv = document.getElementById('logContent');
+        function log(msg) {
+            console.log(msg);
+            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
 
-            // 商家ID（从URL参数获取，用于跳转）
-            const urlParams = new URLSearchParams(window.location.search);
-            const shopId = urlParams.get('shopId') || 'billiard_001';
-            const douyinPoiId = shopId;
-            const meituanPoiId = shopId;
+        // 获取shopId参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopId = urlParams.get('shopId') || 'billiard_001';
+        log(`初始化完成，shopId = ${shopId}`);
 
-            // 设备与环境检测
-            const ua = navigator.userAgent.toLowerCase();
-            const isAndroid = /android/.test(ua);
-            const isHarmony = /harmonyos/.test(ua);
-            const isWeChat = /micromessenger/.test(ua);
-            const isQQ = /qq\//.test(ua);
-            const isAlipay = /alipayclient/.test(ua);
+        // 检测环境
+        const ua = navigator.userAgent;
+        log(`User Agent: ${ua}`);
+        const isIOS = /iPhone|iPad|iPod/.test(ua);
+        const isAndroid = /Android/.test(ua);
+        const isWeChat = /MicroMessenger/.test(ua);
+        log(`设备: ${isIOS ? 'iOS' : (isAndroid ? 'Android' : '其他')}`);
+        log(`是否微信内置浏览器: ${isWeChat ? '是' : '否'}`);
 
-            // DOM 元素
-            const reviewsContainer = document.getElementById('reviewsContainer');
-            const modalOverlay = document.getElementById('appChoiceModal');
-            const closeModalBtn = document.getElementById('closeModal');
-            const chooseDouyin = document.getElementById('chooseDouyin');
-            const chooseMeituan = document.getElementById('chooseMeituan');
-            const toastMessage = document.getElementById('toastMessage');
-            const guideOverlay = document.getElementById('guideOverlay');
-
-            function showToast(msg, duration = 3000) {
-                toastMessage.style.display = 'block';
-                toastMessage.textContent = msg;
-                setTimeout(() => { toastMessage.style.display = 'none'; }, duration);
-            }
-
-            function closeGuide() { guideOverlay.style.display = 'none'; }
-            function showBrowserGuide() { guideOverlay.style.display = 'flex'; }
-
-            async function copyText(text) {
-                try {
-                    await navigator.clipboard.writeText(text);
-                    return true;
-                } catch (err) {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = text;
-                    textarea.style.position = 'fixed';
-                    textarea.style.opacity = '0';
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    const success = document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    return success;
-                }
-            }
-
-            function renderReviews(reviews) {
-                if (!reviews.length) {
-                    reviewsContainer.innerHTML = '<div class="empty-message">✨ 所有好评已被用完，请联系管理员添加~</div>';
-                    return;
-                }
-                let listToShow = reviews;
-                if (reviews.length > 5) {
-                    const shuffled = [...reviews];
-                    for (let i = shuffled.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                    }
-                    listToShow = shuffled.slice(0, 5);
-                }
-                let html = '';
-                listToShow.forEach(item => {
-                    html += `
-                        <div class="review-card">
-                            <span class="review-text">${escapeHtml(item.text)}</span>
-                            <button class="copy-btn" data-id="${item.id}">复制</button>
-                        </div>
-                    `;
-                });
-                reviewsContainer.innerHTML = html;
-            }
-
-            function escapeHtml(str) {
-                if (!str) return '';
-                return str.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
-            }
-
-            // ================= 硬编码跳转引擎（多重协议 + 降级） =================
-            function tryOpenApp(sequence, fallbackUrl, appName) {
-                let appLaunched = false;
-                let iframe = null;
-                let timer = null;
-
-                const onVisibility = () => {
-                    if (document.hidden) {
-                        appLaunched = true;
-                        cleanUp();
-                        showToast(`✅ ${appName} APP已打开`, 2000);
-                    }
-                };
-                const onBlur = () => {
-                    appLaunched = true;
-                    cleanUp();
-                    showToast(`✅ ${appName} APP已打开`, 2000);
-                };
-                document.addEventListener('visibilitychange', onVisibility);
-                window.addEventListener('blur', onBlur);
-
-                function cleanUp() {
-                    document.removeEventListener('visibilitychange', onVisibility);
-                    window.removeEventListener('blur', onBlur);
-                    if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                    iframe = null;
-                    if (timer) clearTimeout(timer);
-                }
-
-                function tryNext(index) {
-                    if (appLaunched || index >= sequence.length) return;
-                    const item = sequence[index];
-                    
-                    if (item.type === 'scheme' || item.type === 'intent') {
-                        iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = item.url;
-                        document.body.appendChild(iframe);
-                        setTimeout(() => {
-                            if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                            iframe = null;
-                        }, 500);
-                    } else if (item.type === 'universal') {
-                        const link = document.createElement('a');
-                        link.href = item.url;
-                        link.style.display = 'none';
-                        document.body.appendChild(link);
-                        link.click();
-                        setTimeout(() => document.body.removeChild(link), 200);
-                    }
-                    setTimeout(() => tryNext(index + 1), 400);
-                }
-
-                tryNext(0);
-                timer = setTimeout(() => {
-                    if (!appLaunched) {
-                        cleanUp();
-                        if (confirm(`未成功唤起${appName} APP，是否前往网页版查看？`)) {
-                            window.location.href = fallbackUrl;
-                        }
-                    }
+        // 抖音跳转
+        function jumpDouyin() {
+            log('===== 开始尝试抖音跳转 =====');
+            const douyinScheme = `snssdk1128://poi/detail/?id=${shopId}`;
+            const douyinIntent = `intent://poi/detail/?id=${shopId}#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;S.browser_fallback_url=https%3A%2F%2Fwww.douyin.com%2Fpoi%2F${shopId};end;`;
+            const fallbackUrl = `https://www.douyin.com/poi/${shopId}`;
+            
+            if (isIOS) {
+                log('iOS: 尝试 universal link 和 scheme');
+                // iOS 尝试 universal link
+                const link = document.createElement('a');
+                link.href = `https://www.douyin.com/poi/${shopId}`;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => document.body.removeChild(link), 500);
+                // 降级
+                setTimeout(() => {
+                    log('iOS 降级: 直接跳转 scheme');
+                    window.location.href = douyinScheme;
+                }, 800);
+                setTimeout(() => {
+                    log('最终降级: 跳转网页');
+                    window.location.href = fallbackUrl;
                 }, 3000);
+            } else {
+                // Android: 优先使用 intent（通过 iframe 或 location）
+                log('Android: 尝试 intent 协议');
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = douyinIntent;
+                document.body.appendChild(iframe);
+                setTimeout(() => document.body.removeChild(iframe), 800);
+                
+                // 降级到 scheme
+                setTimeout(() => {
+                    log('Android 降级: 直接跳转 scheme');
+                    window.location.href = douyinScheme;
+                }, 1000);
+                // 最终降级
+                setTimeout(() => {
+                    log('最终降级: 跳转网页');
+                    window.location.href = fallbackUrl;
+                }, 3500);
             }
+        }
 
-            // ========== 硬编码跳转入口 ==========
-            function executeHardcodedJump(platform) {
-                // 微信/QQ/支付宝环境引导
-                if (isWeChat || isQQ || isAlipay) {
-                    showBrowserGuide();
-                    return;
-                }
-
-                // 抖音跳转配置（Android 优先 intent，iOS 优先 universal）
-                const isIOS = /iPhone|iPad|iPod/.test(ua);
-                let sequence = [];
-                let fallback = '';
-
-                if (platform === 'douyin') {
-                    fallback = `https://www.douyin.com/poi/${douyinPoiId}`;
-                    if (isIOS) {
-                        sequence = [
-                            { type: 'universal', url: `https://www.douyin.com/poi/${douyinPoiId}` },
-                            { type: 'scheme', url: `snssdk1128://poi/detail/?id=${douyinPoiId}` }
-                        ];
-                    } else {
-                        // Android: 使用 intent 协议 + scheme 降级
-                        const encodedFallback = encodeURIComponent(fallback);
-                        sequence = [
-                            {
-                                type: 'intent',
-                                url: `intent://poi/detail/?id=${douyinPoiId}#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;S.browser_fallback_url=${encodedFallback};end;`
-                            },
-                            {
-                                type: 'scheme',
-                                url: `snssdk1128://poi/detail/?id=${douyinPoiId}`
-                            }
-                        ];
-                    }
-                } else if (platform === 'meituan') {
-                    fallback = `https://i.meituan.com/poi/${meituanPoiId}`;
-                    if (isIOS) {
-                        sequence = [
-                            { type: 'universal', url: `https://i.meituan.com/poi/${meituanPoiId}` },
-                            { type: 'scheme', url: `imeituan://www.meituan.com/poi/${meituanPoiId}` }
-                        ];
-                    } else {
-                        const encodedFallback = encodeURIComponent(fallback);
-                        sequence = [
-                            {
-                                type: 'intent',
-                                url: `intent://poi/${meituanPoiId}#Intent;scheme=imeituan;package=com.sankuai.meituan;S.browser_fallback_url=${encodedFallback};end;`
-                            },
-                            {
-                                type: 'scheme',
-                                url: `imeituan://www.meituan.com/poi/${meituanPoiId}`
-                            }
-                        ];
-                    }
-                }
-
-                if (sequence.length > 0) {
-                    tryOpenApp(sequence, fallback, platform === 'douyin' ? '抖音' : '美团');
-                } else {
-                    showToast('无效的平台', 2000);
-                }
+        // 美团跳转
+        function jumpMeituan() {
+            log('===== 开始尝试美团跳转 =====');
+            const meituanScheme = `imeituan://www.meituan.com/poi/${shopId}`;
+            const meituanIntent = `intent://poi/${shopId}#Intent;scheme=imeituan;package=com.sankuai.meituan;S.browser_fallback_url=https%3A%2F%2Fi.meituan.com%2Fpoi%2F${shopId};end;`;
+            const fallbackUrl = `https://i.meituan.com/poi/${shopId}`;
+            
+            if (isIOS) {
+                log('iOS: 尝试 universal link');
+                const link = document.createElement('a');
+                link.href = `https://i.meituan.com/poi/${shopId}`;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => document.body.removeChild(link), 500);
+                setTimeout(() => {
+                    log('iOS 降级: scheme');
+                    window.location.href = meituanScheme;
+                }, 800);
+                setTimeout(() => {
+                    log('最终降级: 网页');
+                    window.location.href = fallbackUrl;
+                }, 3000);
+            } else {
+                log('Android: 尝试 intent');
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = meituanIntent;
+                document.body.appendChild(iframe);
+                setTimeout(() => document.body.removeChild(iframe), 800);
+                setTimeout(() => {
+                    log('Android 降级: scheme');
+                    window.location.href = meituanScheme;
+                }, 1000);
+                setTimeout(() => {
+                    log('最终降级: 网页');
+                    window.location.href = fallbackUrl;
+                }, 3500);
             }
+        }
 
-            // ================= 主流程 =================
-            function init() {
-                renderReviews(currentReviews);
-            }
-
-            reviewsContainer.addEventListener('click', async (e) => {
-                const btn = e.target.closest('.copy-btn');
-                if (!btn) return;
-                const id = btn.getAttribute('data-id');
-                if (id) {
-                    selectedReviewId = id;
-                    modalOverlay.classList.add('show');
-                }
-            });
-
-            chooseDouyin.addEventListener('click', async () => {
-                if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
-                const review = currentReviews.find(r => r.id === selectedReviewId);
-                if (review) {
-                    await copyText(review.text);
-                    // 模拟删除好评（从数组中移除）
-                    currentReviews = currentReviews.filter(r => r.id !== selectedReviewId);
-                    renderReviews(currentReviews);
-                }
-                modalOverlay.classList.remove('show');
-                executeHardcodedJump('douyin');
-            });
-
-            chooseMeituan.addEventListener('click', async () => {
-                if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
-                const review = currentReviews.find(r => r.id === selectedReviewId);
-                if (review) {
-                    await copyText(review.text);
-                    currentReviews = currentReviews.filter(r => r.id !== selectedReviewId);
-                    renderReviews(currentReviews);
-                }
-                modalOverlay.classList.remove('show');
-                executeHardcodedJump('meituan');
-            });
-
-            closeModalBtn.addEventListener('click', () => {
-                modalOverlay.classList.remove('show');
-                selectedReviewId = null;
-            });
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) modalOverlay.classList.remove('show');
-            });
-
-            init();
-        })();
+        document.getElementById('btnDouyin').onclick = () => {
+            log('用户点击抖音按钮');
+            jumpDouyin();
+        };
+        document.getElementById('btnMeituan').onclick = () => {
+            log('用户点击美团按钮');
+            jumpMeituan();
+        };
     </script>
 </body>
 </html>
