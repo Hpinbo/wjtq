@@ -211,6 +211,43 @@
             z-index: 2000;
             backdrop-filter: blur(10px);
         }
+        .guide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .guide-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            max-width: 280px;
+            margin: 20px;
+        }
+        .guide-card img {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        .guide-card p {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .guide-card button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+        }
         @media (prefers-color-scheme: dark) {
             body { background: #121212; }
             .glass-container { background: rgba(40,40,40,0.7); border-color: rgba(255,255,255,0.1); }
@@ -224,11 +261,20 @@
             .modal-title { color: #f0f0f0; }
             .app-btn { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.2); color: #f0f0f0; }
             .cancel-btn { border-color: rgba(255,255,255,0.2); color: #cccccc; }
+            .guide-card { background: #1e1e1e; color: white; }
+            .guide-card p { color: #ddd; }
         }
     </style>
 </head>
 <body>
     <div class="toast-message" id="toastMessage"></div>
+    <div class="guide-overlay" id="guideOverlay">
+        <div class="guide-card">
+            <p>📢 请点击右上角</p>
+            <p>选择「在浏览器中打开」</p>
+            <button onclick="closeGuide()">我知道了</button>
+        </div>
+    </div>
 
     <div class="glass-container">
         <div id="reviewsContainer" class="reviews-list">
@@ -254,28 +300,30 @@
 
     <script>
         (function() {
-            // ================= 配置（请根据实际情况修改） =================
+            // ================= 配置 =================
             const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5';       // 你的云开发环境ID
             const COLLECTION_NAME = 'wjtq';                    // 好评集合名
-            const CLOUD_FUNCTION_NAME = 'scfhelloworld';       // 云函数名称（必须与你创建的一致）
+            const CLOUD_FUNCTION_NAME = 'scfhelloworld';       // 云函数名称
             
             let db = null;
             let cloudApp = null;
-            let isCloudReady = false;
             let currentReviews = [];
             let selectedReviewId = null;
 
-            // 商家ID（从URL参数获取，例如 ?shopId=billiard_001）
             const urlParams = new URLSearchParams(window.location.search);
             const shopId = urlParams.get('shopId') || 'billiard_001';
             const douyinPoiId = shopId;
             const meituanPoiId = shopId;
 
-            // 设备检测（用于降级唤起时的iframe策略，实际sequence由云函数决定）
+            // 设备与环境检测
             const ua = navigator.userAgent.toLowerCase();
-            const isHarmony = ua.includes('harmony') || ua.includes('openharmony');
-            const isAndroid = /android/.test(ua) && !isHarmony;
-            
+            const isAndroid = /android/.test(ua);
+            const isHarmony = /harmonyos/.test(ua);
+            const isWeChat = /micromessenger/.test(ua);
+            const isQQ = /qq\//.test(ua);
+            const isAlipay = /alipayclient/.test(ua);
+            const isChrome = /chrome\/\d+/.test(ua) && !/edge|opr/.test(ua);
+
             // DOM 元素
             const reviewsContainer = document.getElementById('reviewsContainer');
             const modalOverlay = document.getElementById('appChoiceModal');
@@ -283,6 +331,7 @@
             const chooseDouyin = document.getElementById('chooseDouyin');
             const chooseMeituan = document.getElementById('chooseMeituan');
             const toastMessage = document.getElementById('toastMessage');
+            const guideOverlay = document.getElementById('guideOverlay');
 
             function showToast(msg, duration = 3000) {
                 toastMessage.style.display = 'block';
@@ -290,6 +339,14 @@
                 setTimeout(() => {
                     toastMessage.style.display = 'none';
                 }, duration);
+            }
+
+            function closeGuide() {
+                guideOverlay.style.display = 'none';
+            }
+
+            function showBrowserGuide() {
+                guideOverlay.style.display = 'flex';
             }
 
             async function copyText(text) {
@@ -324,7 +381,6 @@
                     cloudApp = cloudbase.init({ env: CLOUD_ENV });
                     await cloudApp.auth().signInAnonymously();
                     db = cloudApp.database();
-                    isCloudReady = true;
                     return true;
                 } catch (err) {
                     console.error('初始化失败', err);
@@ -392,7 +448,7 @@
                 });
             }
 
-            // ================= 通用跳转引擎（执行云函数返回的 sequence） =================
+            // ================= 跳转引擎 =================
             function tryOpenApp(sequence, fallbackUrl, appName) {
                 let appLaunched = false;
                 let iframe = null;
@@ -425,21 +481,7 @@
                     if (appLaunched || index >= sequence.length) return;
                     const item = sequence[index];
                     
-                    if (item.type === 'scheme') {
-                        // Android 使用 iframe 方式尝试 scheme
-                        if (isAndroid || isHarmony) {
-                            iframe = document.createElement('iframe');
-                            iframe.style.display = 'none';
-                            iframe.src = item.url;
-                            document.body.appendChild(iframe);
-                            setTimeout(() => {
-                                if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                                iframe = null;
-                            }, 500);
-                        } else {
-                            window.location.href = item.url;
-                        }
-                    } else if (item.type === 'intent') {
+                    if (item.type === 'scheme' || item.type === 'intent') {
                         iframe = document.createElement('iframe');
                         iframe.style.display = 'none';
                         iframe.src = item.url;
@@ -470,12 +512,18 @@
                 }, 3000);
             }
 
-            // ========== 调用云函数获取跳转配置，然后执行跳转 ==========
             async function executeJump(platform) {
+                // 在微信/QQ/支付宝内，引导使用浏览器打开
+                if (isWeChat || isQQ || isAlipay) {
+                    showBrowserGuide();
+                    return;
+                }
+
                 if (!cloudApp) {
                     showToast('云开发未初始化，请刷新重试', 3000);
                     return;
                 }
+
                 try {
                     showToast(`正在获取跳转配置...`, 1000);
                     const res = await cloudApp.callFunction({
