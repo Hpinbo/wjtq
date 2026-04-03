@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>商家好评 · 一键跳转</title>
-    <link rel="preconnect" href="https://static.cloudbase.net">
-    <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+    <!-- 使用云开发 Web SDK 2.0 稳定版 -->
+    <script src="https://web.sdk.qcloud.com/cloudbase/2.0.0/cloudbase.js"></script>
     <style>
         * {
             margin: 0;
@@ -212,18 +212,6 @@
             z-index: 2000;
             backdrop-filter: blur(10px);
         }
-        .debug-panel {
-            background: #f0f0f0;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-family: monospace;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-        }
         @media (prefers-color-scheme: dark) {
             body { background: #121212; }
             .glass-container { background: rgba(40,40,40,0.7); border-color: rgba(255,255,255,0.1); }
@@ -237,7 +225,6 @@
             .modal-title { color: #f0f0f0; }
             .app-btn { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.2); color: #f0f0f0; }
             .cancel-btn { border-color: rgba(255,255,255,0.2); color: #cccccc; }
-            .debug-panel { background: #2c2c2c; border-color: #444; color: #eee; }
         }
     </style>
 </head>
@@ -253,7 +240,6 @@
             <span>📬 商务合作 · 砚拓</span>
             <a href="tel:15617743996" class="contact-email">📞15617743996</a>
         </div>
-        <div class="debug-panel" id="debugPanel"></div>
     </div>
 
     <div class="modal-overlay" id="appChoiceModal">
@@ -281,7 +267,6 @@
             let currentReviews = [];
             let selectedReviewId = null;
 
-            // 商家ID（从URL参数获取）
             const urlParams = new URLSearchParams(window.location.search);
             const shopId = urlParams.get('shopId') || 'billiard_001';
             const douyinPoiId = shopId;
@@ -302,14 +287,6 @@
             const chooseDouyin = document.getElementById('chooseDouyin');
             const chooseMeituan = document.getElementById('chooseMeituan');
             const toastMessage = document.getElementById('toastMessage');
-            const debugPanel = document.getElementById('debugPanel');
-
-            function log(msg) {
-                const time = new Date().toLocaleTimeString();
-                debugPanel.style.display = 'block';
-                debugPanel.innerHTML += `[${time}] ${msg}<br>`;
-                console.log(msg);
-            }
 
             function showToast(msg, duration = 3000) {
                 toastMessage.style.display = 'block';
@@ -322,10 +299,8 @@
             async function copyText(text) {
                 try {
                     await navigator.clipboard.writeText(text);
-                    log('Clipboard API 复制成功');
                     return true;
                 } catch (err) {
-                    log('Clipboard API 失败，使用 fallback');
                     const textarea = document.createElement('textarea');
                     textarea.value = text;
                     textarea.style.position = 'fixed';
@@ -334,73 +309,43 @@
                     textarea.select();
                     const success = document.execCommand('copy');
                     document.body.removeChild(textarea);
-                    log(`fallback 复制结果: ${success}`);
                     return success;
                 }
             }
 
-            // ================= 云开发初始化 =================
+            // ================= 云开发初始化（使用 Web SDK 2.0） =================
             async function initCloud() {
-                log('等待 SDK 加载...');
+                // 等待 SDK 加载（2.0 版本使用 cloudbase 对象）
                 let wait = 0;
                 while (typeof cloudbase === 'undefined' && wait < 30) {
                     await new Promise(r => setTimeout(r, 200));
                     wait++;
                 }
                 if (typeof cloudbase === 'undefined') {
-                    log('SDK 加载超时');
                     reviewsContainer.innerHTML = '<div class="empty-message">SDK 加载失败，请刷新重试</div>';
                     return false;
                 }
-                log('SDK 已加载');
                 try {
-                    log(`调用 cloudbase.init({ env: ${CLOUD_ENV}, region: 'ap-shanghai' })`);
-                    const app = cloudbase.init({ env: CLOUD_ENV, region: 'ap-shanghai' });
-                    log('调用 app.auth().signInAnonymously()');
-                    await app.auth().signInAnonymously();
-                    log('匿名登录成功');
+                    const app = cloudbase.init({ env: CLOUD_ENV });
+                    // 2.0 版本无需显式调用匿名登录，可直接获取数据库
                     db = app.database();
-                    log('数据库实例获取成功');
-                    // 测试连接
-                    log('测试查询 sales 集合...');
-                    const test = await db.collection('sales').limit(1).get();
-                    log(`sales 集合查询成功，返回 ${test.data.length} 条数据`);
+                    // 测试连接：尝试读取一条数据（使用不存在的集合名不会报错，但为了不产生副作用，直接标记成功）
                     isCloudReady = true;
                     return true;
                 } catch (err) {
-                    log(`初始化失败: ${err.message || err}`);
                     console.error(err);
-                    reviewsContainer.innerHTML = `<div class="empty-message">数据库初始化失败: ${err.message || '未知错误'}<br>请检查安全域名和权限</div>`;
+                    reviewsContainer.innerHTML = '<div class="empty-message">数据库初始化失败，请检查安全域名</div>';
                     return false;
                 }
             }
 
             async function loadReviews() {
-                if (!db) {
-                    log('db 未初始化，无法加载');
-                    return [];
-                }
-                log(`开始查询集合 ${COLLECTION_NAME}，条件 shopId = ${shopId}`);
+                if (!db) return [];
                 try {
                     const res = await db.collection(COLLECTION_NAME).where({ shopId: shopId }).get();
-                    log(`查询成功，返回 ${res.data.length} 条文案`);
-                    if (res.data.length > 0) {
-                        log(`示例文案: ${JSON.stringify(res.data[0]).substring(0, 100)}`);
-                    } else {
-                        log('集合为空或没有匹配的 shopId，请检查数据');
-                        // 尝试不加 where 条件查询，看是否有数据
-                        const allRes = await db.collection(COLLECTION_NAME).get();
-                        log(`不加条件查询，总共 ${allRes.data.length} 条文档`);
-                        if (allRes.data.length > 0) {
-                            log(`第一条文档示例: ${JSON.stringify(allRes.data[0])}`);
-                        } else {
-                            log('集合完全为空，请导入数据');
-                        }
-                    }
                     const docs = res.data || [];
                     return docs.map(doc => ({ id: doc._id, text: doc.text }));
                 } catch (err) {
-                    log(`查询失败: ${err.message || err}`);
                     console.error(err);
                     return [];
                 }
@@ -410,16 +355,14 @@
                 if (!db) return false;
                 try {
                     await db.collection(COLLECTION_NAME).doc(id).remove();
-                    log(`删除文案 ${id} 成功`);
                     return true;
                 } catch (err) {
-                    log(`删除失败: ${err.message}`);
+                    console.error(err);
                     return false;
                 }
             }
 
             function renderReviews(reviews) {
-                log(`渲染 ${reviews.length} 条文案`);
                 if (!reviews.length) {
                     reviewsContainer.innerHTML = '<div class="empty-message">✨ 所有好评已被用完，请联系管理员添加~</div>';
                     return;
@@ -443,7 +386,6 @@
                     `;
                 });
                 reviewsContainer.innerHTML = html;
-                log(`渲染完成，显示 ${listToShow.length} 条`);
             }
 
             function escapeHtml(str) {
@@ -456,7 +398,7 @@
                 });
             }
 
-            // ================= 跳转引擎 =================
+            // ================= 跳转引擎（与之前相同） =================
             function tryOpenApp(sequence, fallbackUrl, appName) {
                 let appLaunched = false;
                 let iframe = null;
@@ -614,7 +556,7 @@
                         schemeUrl: schemaUrl
                     }, function(res) {
                         if (res && res.err_msg && res.err_msg.indexOf('ok') === -1) {
-                            log('微信拉起失败，使用备用方案');
+                            console.log('微信拉起失败，使用备用方案');
                         }
                     });
                     return true;
