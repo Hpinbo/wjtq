@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>商家好评 · 一键跳转</title>
-    <!-- 使用云开发 Web SDK 2.0 稳定版 -->
-    <script src="https://web.sdk.qcloud.com/cloudbase/2.0.0/cloudbase.js"></script>
+    <link rel="preconnect" href="https://static.cloudbase.net">
+    <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
     <style>
         * {
             margin: 0;
@@ -259,7 +259,7 @@
 
     <script>
         (function() {
-            // ================= 环境配置 =================
+            // ================= 环境配置（完全复用好评宝的稳定方案） =================
             const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5-1404006356';
             const COLLECTION_NAME = 'wjtq';
             let db = null;
@@ -267,6 +267,7 @@
             let currentReviews = [];
             let selectedReviewId = null;
 
+            // 商家ID（从URL参数获取）
             const urlParams = new URLSearchParams(window.location.search);
             const shopId = urlParams.get('shopId') || 'billiard_001';
             const douyinPoiId = shopId;
@@ -313,9 +314,9 @@
                 }
             }
 
-            // ================= 云开发初始化（使用 Web SDK 2.0） =================
+            // ================= 云开发初始化（完全按照好评宝方式） =================
             async function initCloud() {
-                // 等待 SDK 加载（2.0 版本使用 cloudbase 对象）
+                // 等待 SDK 加载
                 let wait = 0;
                 while (typeof cloudbase === 'undefined' && wait < 30) {
                     await new Promise(r => setTimeout(r, 200));
@@ -326,14 +327,15 @@
                     return false;
                 }
                 try {
+                    // 注意：不指定 region，与好评宝一致
                     const app = cloudbase.init({ env: CLOUD_ENV });
-                    // 2.0 版本无需显式调用匿名登录，可直接获取数据库
+                    // 匿名登录
+                    await app.auth().signInAnonymously();
                     db = app.database();
-                    // 测试连接：尝试读取一条数据（使用不存在的集合名不会报错，但为了不产生副作用，直接标记成功）
                     isCloudReady = true;
                     return true;
                 } catch (err) {
-                    console.error(err);
+                    console.error('初始化失败', err);
                     reviewsContainer.innerHTML = '<div class="empty-message">数据库初始化失败，请检查安全域名</div>';
                     return false;
                 }
@@ -398,7 +400,7 @@
                 });
             }
 
-            // ================= 跳转引擎（与之前相同） =================
+            // ================= 全机型跳转引擎 =================
             function tryOpenApp(sequence, fallbackUrl, appName) {
                 let appLaunched = false;
                 let iframe = null;
@@ -475,9 +477,10 @@
                 }, 3000);
             }
 
+            // ========== 抖音唤起（仿竞品：直接跳转商家详情页） ==========
             function jumpToDouyin() {
                 const douyinScheme = `snssdk1128://poi/detail/?id=${douyinPoiId}`;
-                const altSchemes = [`snssdk1128://feed?url=https://v.douyin.com/xxx`, `snssdk1128://`];
+                const altSchemes = [`snssdk1128://feed`, `snssdk1128://`];
                 const intent = `intent://poi/detail/?id=${douyinPoiId}#Intent;package=com.ss.android.ugc.aweme;scheme=snssdk1128;end;`;
                 const universalLink = `https://www.douyin.com/poi/${douyinPoiId}`;
                 const fallbackUrl = `https://v.douyin.com/xVZOcGCPqIY/`;
@@ -512,6 +515,7 @@
                 tryOpenApp(sequence, fallbackUrl, '抖音');
             }
 
+            // ========== 美团唤起 ==========
             function jumpToMeituan() {
                 const meituanScheme = `imeituan://www.meituan.com/poi/${meituanPoiId}`;
                 const altSchemes = [
@@ -544,24 +548,6 @@
                     ];
                 }
                 tryOpenApp(sequence, fallbackUrl, '美团');
-            }
-
-            function wechatJump(appName) {
-                if (!isWeChat) return false;
-                if (typeof WeixinJSBridge !== 'undefined') {
-                    const schemaUrl = appName === 'douyin' 
-                        ? `snssdk1128://poi/detail/?id=${douyinPoiId}` 
-                        : `imeituan://www.meituan.com/poi/${meituanPoiId}`;
-                    WeixinJSBridge.invoke('launchApplication', {
-                        schemeUrl: schemaUrl
-                    }, function(res) {
-                        if (res && res.err_msg && res.err_msg.indexOf('ok') === -1) {
-                            console.log('微信拉起失败，使用备用方案');
-                        }
-                    });
-                    return true;
-                }
-                return false;
             }
 
             // ================= 主流程 =================
@@ -600,7 +586,6 @@
                     renderReviews(currentReviews);
                 }
                 modalOverlay.classList.remove('show');
-                if (isWeChat && wechatJump('douyin')) return;
                 jumpToDouyin();
             });
 
@@ -614,7 +599,6 @@
                     renderReviews(currentReviews);
                 }
                 modalOverlay.classList.remove('show');
-                if (isWeChat && wechatJump('meituan')) return;
                 jumpToMeituan();
             });
 
