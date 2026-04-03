@@ -6,305 +6,58 @@
     <title>商家好评 · 一键跳转</title>
     <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-        }
-        body {
-            background: #f5f7fa;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .glass-container {
-            max-width: 480px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(18px);
-            border-radius: 36px;
-            padding: 24px 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .reviews-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .review-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 28px;
-            padding: 16px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s;
-            animation: cardPop 0.3s ease;
-        }
-        .review-card:active {
-            transform: scale(0.98);
-        }
-        @keyframes cardPop {
-            0% { opacity: 0; transform: translateY(15px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .review-text {
-            font-size: 1rem;
-            line-height: 1.4;
-            color: #1e2a3a;
-            font-weight: 480;
-            flex: 1;
-            padding-right: 12px;
-        }
-        .copy-btn {
-            background: rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 40px;
-            padding: 8px 16px;
-            font-size: 0.9rem;
-            font-weight: 550;
-            color: #2c3e50;
-            backdrop-filter: blur(4px);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-        .copy-btn:active {
-            transform: scale(0.92);
-            background: rgba(0, 0, 0, 0.1);
-        }
-        .copy-btn::after {
-            content: "📋";
-            font-size: 1rem;
-        }
-        .browser-tip {
-            background: rgba(255, 230, 200, 0.7);
-            backdrop-filter: blur(5px);
-            border-radius: 30px;
-            padding: 10px 16px;
-            margin: 10px 0 16px;
-            font-size: 0.85rem;
-            text-align: center;
-            color: #1e2a3a;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .contact-footer {
-            margin-top: 16px;
-            text-align: center;
-            padding: 18px 10px 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            color: #5a6e7c;
-            font-size: 0.95rem;
-        }
-        .contact-email {
-            background: rgba(255, 255, 255, 0.7);
-            display: inline-block;
-            padding: 8px 28px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: #1e2a3a;
-            text-decoration: none;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .modal-glass {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(30px);
-            border-radius: 48px;
-            padding: 32px 24px;
-            width: 300px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transform: scale(0.9);
-            transition: transform 0.2s;
-            text-align: center;
-        }
-        .modal-overlay.show .modal-glass {
-            transform: scale(1);
-        }
-        .modal-title {
-            color: #1e2a3a;
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-        }
-        .app-options {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        .app-btn {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 60px;
-            padding: 16px;
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: #1e2a3a;
-            cursor: pointer;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-        }
-        .app-btn:active {
-            transform: scale(0.96);
-        }
-        .cancel-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 40px;
-            padding: 12px;
-            margin-top: 8px;
-            color: #5a6e7c;
-            cursor: pointer;
-        }
-        .empty-message {
-            text-align: center;
-            padding: 30px 0;
-            color: #5a6e7c;
-            font-style: italic;
-            font-size: 1.2rem;
-        }
-        .toast-message {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            display: none;
-            z-index: 2000;
-            backdrop-filter: blur(10px);
-        }
-        .guide-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .guide-card {
-            background: white;
-            border-radius: 20px;
-            padding: 24px;
-            text-align: center;
-            max-width: 280px;
-            margin: 20px;
-        }
-        .guide-card img {
-            width: 100%;
-            margin-bottom: 16px;
-        }
-        .guide-card p {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .guide-card button {
-            background: #007aff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 16px;
-        }
-        @media (prefers-color-scheme: dark) {
-            body { background: #121212; }
-            .glass-container { background: rgba(40,40,40,0.7); border-color: rgba(255,255,255,0.1); }
-            .review-card { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); }
-            .review-text { color: #f0f0f0; }
-            .copy-btn { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #ccc; }
-            .browser-tip { background: rgba(80,60,30,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; }
-            .contact-footer { border-color: rgba(255,255,255,0.1); color: #cccccc; }
-            .contact-email { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; }
-            .modal-glass { background: rgba(40,40,40,0.8); border-color: rgba(255,255,255,0.2); }
-            .modal-title { color: #f0f0f0; }
-            .app-btn { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.2); color: #f0f0f0; }
-            .cancel-btn { border-color: rgba(255,255,255,0.2); color: #cccccc; }
-            .guide-card { background: #1e1e1e; color: white; }
-            .guide-card p { color: #ddd; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+        body { background: #f5f7fa; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .glass-container { max-width: 480px; width: 100%; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(18px); border-radius: 36px; padding: 24px 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .reviews-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        .review-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); border-radius: 28px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08); transition: transform 0.2s; animation: cardPop 0.3s ease; }
+        .review-card:active { transform: scale(0.98); }
+        @keyframes cardPop { 0% { opacity: 0; transform: translateY(15px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        .review-text { font-size: 1rem; line-height: 1.4; color: #1e2a3a; font-weight: 480; flex: 1; padding-right: 12px; }
+        .copy-btn { background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 40px; padding: 8px 16px; font-size: 0.9rem; font-weight: 550; color: #2c3e50; backdrop-filter: blur(4px); cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
+        .copy-btn:active { transform: scale(0.92); background: rgba(0, 0, 0, 0.1); }
+        .copy-btn::after { content: "📋"; font-size: 1rem; }
+        .browser-tip { background: rgba(255, 230, 200, 0.7); backdrop-filter: blur(5px); border-radius: 30px; padding: 10px 16px; margin: 10px 0 16px; font-size: 0.85rem; text-align: center; color: #1e2a3a; border: 1px solid rgba(255, 255, 255, 0.3); }
+        .contact-footer { margin-top: 16px; text-align: center; padding: 18px 10px 10px; border-top: 1px solid rgba(255, 255, 255, 0.3); color: #5a6e7c; font-size: 0.95rem; }
+        .contact-email { background: rgba(255, 255, 255, 0.7); display: inline-block; padding: 8px 28px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); margin-top: 8px; font-size: 0.9rem; color: #1e2a3a; text-decoration: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .modal-glass { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(30px); border-radius: 48px; padding: 32px 24px; width: 300px; border: 1px solid rgba(255, 255, 255, 0.3); transform: scale(0.9); transition: transform 0.2s; text-align: center; }
+        .modal-overlay.show .modal-glass { transform: scale(1); }
+        .modal-title { color: #1e2a3a; font-size: 1.4rem; margin-bottom: 20px; }
+        .app-options { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+        .app-btn { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 60px; padding: 16px; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; gap: 12px; color: #1e2a3a; cursor: pointer; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); }
+        .app-btn:active { transform: scale(0.96); }
+        .cancel-btn { background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 40px; padding: 12px; margin-top: 8px; color: #5a6e7c; cursor: pointer; }
+        .empty-message { text-align: center; padding: 30px 0; color: #5a6e7c; font-style: italic; font-size: 1.2rem; }
+        .toast-message { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 12px 24px; border-radius: 40px; font-size: 0.9rem; display: none; z-index: 2000; backdrop-filter: blur(10px); }
+        .guide-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: none; align-items: center; justify-content: center; }
+        .guide-card { background: white; border-radius: 20px; padding: 24px; text-align: center; max-width: 280px; margin: 20px; }
+        .guide-card p { font-size: 16px; color: #333; margin-bottom: 20px; }
+        .guide-card button { background: #007aff; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-size: 16px; }
+        @media (prefers-color-scheme: dark) { body { background: #121212; } .glass-container { background: rgba(40,40,40,0.7); border-color: rgba(255,255,255,0.1); } .review-card { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); } .review-text { color: #f0f0f0; } .copy-btn { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #ccc; } .browser-tip { background: rgba(80,60,30,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; } .contact-footer { border-color: rgba(255,255,255,0.1); color: #cccccc; } .contact-email { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.1); color: #f0f0f0; } .modal-glass { background: rgba(40,40,40,0.8); border-color: rgba(255,255,255,0.2); } .modal-title { color: #f0f0f0; } .app-btn { background: rgba(60,60,60,0.7); border-color: rgba(255,255,255,0.2); color: #f0f0f0; } .cancel-btn { border-color: rgba(255,255,255,0.2); color: #cccccc; } .guide-card { background: #1e1e1e; color: white; } .guide-card p { color: #ddd; } }
     </style>
 </head>
 <body>
     <div class="toast-message" id="toastMessage"></div>
-    <div class="guide-overlay" id="guideOverlay">
-        <div class="guide-card">
-            <p>📢 请点击右上角</p>
-            <p>选择「在浏览器中打开」</p>
-            <button onclick="closeGuide()">我知道了</button>
-        </div>
-    </div>
-
+    <div class="guide-overlay" id="guideOverlay"><div class="guide-card"><p>📢 请点击右上角</p><p>选择「在浏览器中打开」</p><button onclick="closeGuide()">我知道了</button></div></div>
     <div class="glass-container">
-        <div id="reviewsContainer" class="reviews-list">
-            <div class="empty-message">加载中...</div>
-        </div>
-        <div class="browser-tip" id="browserTip">✨ 点击复制 → 选择APP → 自动跳转商家页面</div>
-        <div class="contact-footer">
-            <span>📬 商务合作 · 砚拓</span>
-            <a href="tel:15617743996" class="contact-email">📞15617743996</a>
-        </div>
+        <div id="reviewsContainer" class="reviews-list"><div class="empty-message">加载中...</div></div>
+        <div class="browser-tip">✨ 点击复制 → 选择APP → 自动跳转商家页面</div>
+        <div class="contact-footer"><span>📬 商务合作 · 砚拓</span><a href="tel:15617743996" class="contact-email">📞15617743996</a></div>
     </div>
-
     <div class="modal-overlay" id="appChoiceModal">
-        <div class="modal-glass">
-            <div class="modal-title">平台选择</div>
-            <div class="app-options">
-                <div class="app-btn" id="chooseDouyin">抖音</div>
-                <div class="app-btn" id="chooseMeituan">美团</div>
-            </div>
-            <div class="cancel-btn" id="closeModal">取消</div>
-        </div>
+        <div class="modal-glass"><div class="modal-title">平台选择</div><div class="app-options"><div class="app-btn" id="chooseDouyin">抖音</div><div class="app-btn" id="chooseMeituan">美团</div></div><div class="cancel-btn" id="closeModal">取消</div></div>
     </div>
 
     <script>
         (function() {
-            // ================= 配置 =================
+            // ========== 请确认以下配置正确 ==========
             const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5';       // 你的云开发环境ID
             const COLLECTION_NAME = 'wjtq';                    // 好评集合名
             const CLOUD_FUNCTION_NAME = 'scfhelloworld';       // 云函数名称
-            
+            // =====================================
+
             let db = null;
             let cloudApp = null;
             let currentReviews = [];
@@ -315,16 +68,13 @@
             const douyinPoiId = shopId;
             const meituanPoiId = shopId;
 
-            // 设备与环境检测
             const ua = navigator.userAgent.toLowerCase();
             const isAndroid = /android/.test(ua);
             const isHarmony = /harmonyos/.test(ua);
             const isWeChat = /micromessenger/.test(ua);
             const isQQ = /qq\//.test(ua);
             const isAlipay = /alipayclient/.test(ua);
-            const isChrome = /chrome\/\d+/.test(ua) && !/edge|opr/.test(ua);
 
-            // DOM 元素
             const reviewsContainer = document.getElementById('reviewsContainer');
             const modalOverlay = document.getElementById('appChoiceModal');
             const closeModalBtn = document.getElementById('closeModal');
@@ -336,18 +86,10 @@
             function showToast(msg, duration = 3000) {
                 toastMessage.style.display = 'block';
                 toastMessage.textContent = msg;
-                setTimeout(() => {
-                    toastMessage.style.display = 'none';
-                }, duration);
+                setTimeout(() => { toastMessage.style.display = 'none'; }, duration);
             }
-
-            function closeGuide() {
-                guideOverlay.style.display = 'none';
-            }
-
-            function showBrowserGuide() {
-                guideOverlay.style.display = 'flex';
-            }
+            function closeGuide() { guideOverlay.style.display = 'none'; }
+            function showBrowserGuide() { guideOverlay.style.display = 'flex'; }
 
             async function copyText(text) {
                 try {
@@ -366,7 +108,6 @@
                 }
             }
 
-            // ================= 云开发初始化 =================
             async function initCloud() {
                 let wait = 0;
                 while (typeof cloudbase === 'undefined' && wait < 30) {
@@ -383,8 +124,8 @@
                     db = cloudApp.database();
                     return true;
                 } catch (err) {
-                    console.error('初始化失败', err);
-                    reviewsContainer.innerHTML = '<div class="empty-message">数据库初始化失败，请检查安全域名</div>';
+                    console.error('云开发初始化失败', err);
+                    reviewsContainer.innerHTML = '<div class="empty-message">初始化失败: ' + err.message + '</div>';
                     return false;
                 }
             }
@@ -393,8 +134,7 @@
                 if (!db) return [];
                 try {
                     const res = await db.collection(COLLECTION_NAME).where({ shopId: shopId }).get();
-                    const docs = res.data || [];
-                    return docs.map(doc => ({ id: doc._id, text: doc.text }));
+                    return (res.data || []).map(doc => ({ id: doc._id, text: doc.text }));
                 } catch (err) {
                     console.error(err);
                     return [];
@@ -414,7 +154,7 @@
 
             function renderReviews(reviews) {
                 if (!reviews.length) {
-                    reviewsContainer.innerHTML = '<div class="empty-message">✨ 所有好评已被用完，请联系管理员添加~</div>';
+                    reviewsContainer.innerHTML = '<div class="empty-message">✨ 暂无好评数据，请联系管理员添加~</div>';
                     return;
                 }
                 let listToShow = reviews;
@@ -428,12 +168,7 @@
                 }
                 let html = '';
                 listToShow.forEach(item => {
-                    html += `
-                        <div class="review-card">
-                            <span class="review-text">${escapeHtml(item.text)}</span>
-                            <button class="copy-btn" data-id="${item.id}">复制</button>
-                        </div>
-                    `;
+                    html += `<div class="review-card"><span class="review-text">${escapeHtml(item.text)}</span><button class="copy-btn" data-id="${item.id}">复制</button></div>`;
                 });
                 reviewsContainer.innerHTML = html;
             }
@@ -448,7 +183,6 @@
                 });
             }
 
-            // ================= 跳转引擎 =================
             function tryOpenApp(sequence, fallbackUrl, appName) {
                 let appLaunched = false;
                 let iframe = null;
@@ -480,7 +214,6 @@
                 function tryNext(index) {
                     if (appLaunched || index >= sequence.length) return;
                     const item = sequence[index];
-                    
                     if (item.type === 'scheme' || item.type === 'intent') {
                         iframe = document.createElement('iframe');
                         iframe.style.display = 'none';
@@ -513,17 +246,14 @@
             }
 
             async function executeJump(platform) {
-                // 在微信/QQ/支付宝内，引导使用浏览器打开
                 if (isWeChat || isQQ || isAlipay) {
                     showBrowserGuide();
                     return;
                 }
-
                 if (!cloudApp) {
                     showToast('云开发未初始化，请刷新重试', 3000);
                     return;
                 }
-
                 try {
                     showToast(`正在获取跳转配置...`, 1000);
                     const res = await cloudApp.callFunction({
@@ -553,7 +283,6 @@
                 }
             }
 
-            // ================= 主流程 =================
             async function init() {
                 const ok = await initCloud();
                 if (!ok) return;
@@ -564,9 +293,6 @@
                     currentReviews = reviews;
                     renderReviews(currentReviews);
                 }
-                if (currentReviews.length === 20) showToast('📢 库存剩余 20 条', 5000);
-                else if (currentReviews.length === 10) showToast('📢 库存剩余 10 条', 5000);
-                else if (currentReviews.length === 5) showToast('📢 库存只剩 5 条啦！', 5000);
             }
 
             reviewsContainer.addEventListener('click', async (e) => {
