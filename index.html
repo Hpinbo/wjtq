@@ -2,50 +2,234 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>抖音官方短链直接唤起测试</title>
+    <title>抖音商家页 - 智能跳转（改进版）</title>
     <style>
-        body { padding: 20px; font-family: system-ui; text-align: center; }
-        button { background: #007aff; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 18px; margin: 20px; }
-        .log { background: #f0f0f0; padding: 12px; font-family: monospace; text-align: left; margin-top: 20px; }
+        body {
+            padding: 20px;
+            font-family: system-ui;
+            background: #f5f7fa;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 24px;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007aff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 20px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:active { transform: scale(0.96); background: #005bbf; }
+        .log {
+            background: #1e1e2f;
+            color: #00ff9d;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 11px;
+            font-family: monospace;
+            text-align: left;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 400px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
-    <h2>测试抖音官方短链直接唤起</h2>
-    <button id="testBtn">点击测试</button>
-    <div class="log" id="log">等待测试...</div>
-    <p>注意：请确保手机已安装抖音，并在系统设置中允许浏览器打开其他应用。</p>
+    <div class="card">
+        <div id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>正在智能跳转中...</p>
+        </div>
+        <div id="manualButton" style="display:none;">
+            <p>自动跳转未成功，请手动点击下方按钮</p>
+            <button id="jumpBtn">📱 点击打开抖音商家页</button>
+        </div>
+        <div class="log" id="logContent">
+            📋 点击按钮后，日志会显示在这里...
+        </div>
+        <div class="note">
+            ⚠️ 注意：<br>
+            1. 请在手机自带浏览器或 Chrome 中打开（不要用微信/QQ内置浏览器）<br>
+            2. 如果跳转后只打开抖音首页而非商家页，说明该链接无法直达详情页<br>
+            3. 测试后请将结果反馈给我
+        </div>
+    </div>
 
     <script>
-        // 请从抖音商家分享中获取真实的短链，替换下面的链接
-        // 示例链接：https://v.douyin.com/if/XXXXXXXX/
-        const OFFICIAL_SHORT_LINK = "https://v.douyin.com/if/XXXXXXXX/";  // 替换为实际短链
+        // 您提供的完整官方链接
+        const OFFICIAL_URL = "https://life-share.scsjsd.com/falcon/poi_mwa/poi_detail?poi_id=7556202622550542376&u_code=effg7l6ehf7lg5&biz_code=general&timestamp=1775298361&common_extra=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&utm_source=copy&utm_campaign=client_share&utm_medium=android&app=aweme&ug_share_id=999601aa00d3c_1775298363812";
 
-        const logDiv = document.getElementById('log');
+        const logDiv = document.getElementById('logContent');
         function log(msg) {
-            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
+            const p = document.createElement('div');
+            p.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
+            logDiv.appendChild(p);
+            logDiv.scrollTop = logDiv.scrollHeight;
             console.log(msg);
         }
 
-        document.getElementById('testBtn').onclick = () => {
-            log(`尝试打开: ${OFFICIAL_SHORT_LINK}`);
-            window.location.href = OFFICIAL_SHORT_LINK;
+        // 检测是否为微信/QQ环境
+        const ua = navigator.userAgent;
+        const isWeChat = /MicroMessenger/i.test(ua);
+        const isQQ = /QQ\//i.test(ua);
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-            // 降级检测
-            let timer = setTimeout(() => {
-                log('未检测到页面隐藏，可能未唤起App');
-                alert('未能自动打开抖音，请确认已安装抖音并允许关联启动。');
-            }, 3000);
+        log(`环境检测: ${isAndroid ? 'Android' : isIOS ? 'iOS' : '其他'}, 微信:${isWeChat}, QQ:${isQQ}`);
 
-            const onVisibility = () => {
-                if (document.hidden) {
-                    clearTimeout(timer);
-                    log('页面已隐藏，抖音App可能已成功唤起');
-                    document.removeEventListener('visibilitychange', onVisibility);
+        // 智能跳转主函数
+        function smartJump() {
+            log('开始智能跳转流程');
+            
+            // 方案1: 尝试通过官方短链直接唤起
+            if (isAndroid) {
+                log('尝试方案1: 官方短链直接唤起');
+                const officialShortLink = OFFICIAL_URL;
+                window.location.href = officialShortLink;
+                
+                // 设置降级检测
+                let timer = setTimeout(() => {
+                    log('方案1失败，尝试方案2: 自动点击H5页面按钮');
+                    // 方案2: 通过iframe加载H5页面并自动点击
+                    tryAutoClick();
+                }, 2000);
+                
+                // 监听页面隐藏（App被成功唤起）
+                const onVisibilityChange = () => {
+                    if (document.hidden) {
+                        clearTimeout(timer);
+                        log('✅ 页面已隐藏，抖音App可能已成功唤起');
+                        document.removeEventListener('visibilitychange', onVisibilityChange);
+                    }
+                };
+                document.addEventListener('visibilitychange', onVisibilityChange);
+            } else {
+                log('iOS设备，使用Universal Link');
+                window.location.href = OFFICIAL_URL;
+            }
+        }
+        
+        // 自动点击H5页面中的按钮
+        function tryAutoClick() {
+            log('尝试加载H5页面并自动点击');
+            // 创建一个iframe加载抖音H5页面
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = OFFICIAL_URL;
+            document.body.appendChild(iframe);
+            
+            // 等待iframe加载完成后尝试查找按钮
+            iframe.onload = function() {
+                log('iframe加载完成，尝试查找并点击按钮');
+                try {
+                    // 尝试访问iframe内的DOM（可能受跨域限制）
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc) {
+                        // 尝试多种可能的按钮选择器
+                        const selectors = [
+                            'button', '.open-app-btn', '.download-btn', 
+                            '[class*="open"]', '[class*="download"]',
+                            'a[href*="snssdk1128"]', 'div[class*="btn"]'
+                        ];
+                        let clicked = false;
+                        for (const selector of selectors) {
+                            const btn = iframeDoc.querySelector(selector);
+                            if (btn && (btn.innerText.includes('打开') || btn.innerText.includes('下载'))) {
+                                log(`找到按钮: ${selector}, 内容: ${btn.innerText}`);
+                                btn.click();
+                                clicked = true;
+                                break;
+                            }
+                        }
+                        if (!clicked) {
+                            log('未找到合适的按钮，尝试复制商家ID');
+                            copyShopId();
+                        }
+                    } else {
+                        log('无法访问iframe内容（跨域限制），尝试复制商家ID');
+                        copyShopId();
+                    }
+                } catch(e) {
+                    log(`自动点击失败（跨域限制）: ${e.message}`);
+                    copyShopId();
                 }
             };
-            document.addEventListener('visibilitychange', onVisibility);
-        };
+            
+            // 设置超时，如果10秒后仍未成功，显示手动按钮
+            setTimeout(() => {
+                log('自动跳转超时，显示手动按钮');
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('manualButton').style.display = 'block';
+            }, 10000);
+        }
+        
+        // 复制商家ID并提供搜索指引
+        function copyShopId() {
+            const shopId = '7556202622550542376';
+            const shopName = '商家名称'; // 请替换为实际的商家名称
+            
+            // 复制到剪贴板
+            navigator.clipboard.writeText(shopId).then(() => {
+                log(`已复制商家ID: ${shopId}`);
+                alert(`请打开抖音App，在搜索框中粘贴ID: ${shopId}\n或搜索商家名称: ${shopName}`);
+            }).catch(() => {
+                log('复制失败，请手动复制');
+                alert(`请打开抖音App，搜索商家ID: ${shopId}\n或搜索商家名称: ${shopName}`);
+            });
+            
+            // 尝试直接打开抖音搜索页
+            const searchScheme = `snssdk1128://search?keyword=${encodeURIComponent(shopName)}`;
+            log(`尝试打开抖音搜索: ${searchScheme}`);
+            window.location.href = searchScheme;
+        }
+        
+        // 手动跳转按钮
+        document.getElementById('jumpBtn').addEventListener('click', () => {
+            log('用户点击手动跳转按钮');
+            window.location.href = OFFICIAL_URL;
+        });
+        
+        // 页面加载后自动执行
+        window.addEventListener('load', function() {
+            smartJump();
+        });
     </script>
 </body>
 </html>
