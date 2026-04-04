@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>跳转测试 - Intent优先版</title>
+    <title>跳转测试 - 精准优化版</title>
     <style>
         body { padding: 20px; font-family: system-ui; background: #f5f7fa; text-align: center; }
         button { display: block; width: 100%; max-width: 300px; margin: 20px auto; padding: 16px; font-size: 18px; border-radius: 40px; border: none; background: #007aff; color: white; cursor: pointer; }
@@ -15,7 +15,7 @@
     </style>
 </head>
 <body>
-    <h2>跳转测试（Intent 优先）</h2>
+    <h2>跳转测试 - 精准优化版</h2>
     <button id="douyinBtn">📱 抖音商家页</button>
     <button id="meituanBtn">📱 美团商家页</button>
     <div class="log" id="log">等待操作...</div>
@@ -48,71 +48,99 @@
         const isQQ = /QQ\//i.test(ua);
         log(`环境: ${isAndroid ? 'Android' : isIOS ? 'iOS' : 'PC'}, 微信:${isWeChat}, QQ:${isQQ}`);
 
-        // 抖音跳转（Android 优先 Intent）
+        // 抖音跳转（优化版）
         function jumpDouyin() {
             if (isWeChat || isQQ) {
                 showGuide('请在右上角菜单选择“在浏览器中打开”');
                 return;
             }
 
-            const universal = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
-            const scheme = `snssdk1128://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
-            const intent = `intent://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;S.browser_fallback_url=${encodeURIComponent(universal)};end;`;
+            // 方案一：aweme:// 协议（优先推荐）
+            const awemeUrl = `aweme://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
+            // 方案二：snssdk1128://lynxview（特殊格式）
+            const lynxviewUrl = `snssdk1128://lynxview?surl=${encodeURIComponent(`https://www.douyin.com/poi/${DOUYIN_POI_ID}`)}`;
+            // 方案三：snssdk1128:// 标准格式（备选）
+            const schemeUrl = `snssdk1128://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
+            const universalUrl = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
 
             if (isIOS) {
-                log('iOS: 优先 Universal Link');
-                window.location.href = universal;
-                setTimeout(() => { log('降级: Scheme'); window.location.href = scheme; }, 800);
-                setTimeout(() => { log('最终降级: 网页'); window.location.href = universal; }, 2500);
+                log('iOS: 优先使用 Universal Link');
+                window.location.href = universalUrl;
+                setTimeout(() => { log('降级: Scheme'); window.location.href = schemeUrl; }, 800);
+                setTimeout(() => { log('最终降级: 网页'); window.location.href = universalUrl; }, 2500);
             } else if (isAndroid) {
-                log('Android: 优先 Intent (会弹出选择框)');
-                // 尝试 Intent
+                log('Android: 优先使用 aweme:// 协议');
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
-                iframe.src = intent;
+                iframe.src = awemeUrl;
                 document.body.appendChild(iframe);
                 setTimeout(() => iframe.remove(), 500);
 
-                // 降级到 Scheme
+                // 降级：尝试 lynxview 格式
                 setTimeout(() => {
-                    log('降级: 尝试 Scheme');
-                    window.location.href = scheme;
+                    log('降级: 尝试 lynxview 格式');
+                    const iframe2 = document.createElement('iframe');
+                    iframe2.style.display = 'none';
+                    iframe2.src = lynxviewUrl;
+                    document.body.appendChild(iframe2);
+                    setTimeout(() => iframe2.remove(), 500);
                 }, 800);
-                // 最终降级到网页
+
+                // 再降级：尝试标准 scheme
+                setTimeout(() => {
+                    log('降级: 尝试标准 scheme');
+                    window.location.href = schemeUrl;
+                }, 1300);
+
+                // 最终降级
                 setTimeout(() => {
                     log('最终降级: 打开网页');
-                    window.location.href = universal;
+                    window.location.href = universalUrl;
                 }, 2500);
             } else {
-                window.location.href = universal;
+                window.location.href = universalUrl;
             }
         }
 
-        // 美团跳转（Android 优先 Intent）
+        // 美团跳转（优化版）
         function jumpMeituan() {
             if (isWeChat || isQQ) {
                 showGuide('请在右上角菜单选择“在浏览器中打开”');
                 return;
             }
 
-            const universal = `https://i.meituan.com/poi/${MEITUAN_POI_ID}`;
-            const scheme = `imeituan://www.meituan.com/poi/${MEITUAN_POI_ID}`;
-            const intent = `intent://poi/${MEITUAN_POI_ID}#Intent;scheme=imeituan;package=com.sankuai.meituan;S.browser_fallback_url=${encodeURIComponent(universal)};end;`;
+            // 标准 Intent URL（指定完整HTTP路径）
+            const intentUrl = `intent://www.meituan.com/poi/${MEITUAN_POI_ID}#Intent;scheme=imeituan;package=com.sankuai.meituan;end;`;
+            const schemeUrl = `imeituan://www.meituan.com/poi/${MEITUAN_POI_ID}`;
+            const universalUrl = `https://i.meituan.com/poi/${MEITUAN_POI_ID}`;
 
             if (isIOS) {
-                window.location.href = universal;
-                setTimeout(() => { window.location.href = scheme; }, 800);
-                setTimeout(() => { window.location.href = universal; }, 2500);
+                log('iOS: 优先 Universal Link');
+                window.location.href = universalUrl;
+                setTimeout(() => { window.location.href = schemeUrl; }, 800);
+                setTimeout(() => { window.location.href = universalUrl; }, 2500);
             } else if (isAndroid) {
+                log('Android: 优先使用标准 Intent');
+                // 先检测 Intent 是否可用
+                log('尝试 Intent 跳转...');
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
-                iframe.src = intent;
+                iframe.src = intentUrl;
                 document.body.appendChild(iframe);
                 setTimeout(() => iframe.remove(), 500);
-                setTimeout(() => { window.location.href = scheme; }, 800);
-                setTimeout(() => { window.location.href = universal; }, 2500);
+
+                // 降级：尝试 Scheme
+                setTimeout(() => {
+                    log('降级: 尝试 Scheme');
+                    window.location.href = schemeUrl;
+                }, 800);
+                // 最终降级到网页
+                setTimeout(() => {
+                    log('最终降级: 打开网页');
+                    window.location.href = universalUrl;
+                }, 2500);
             } else {
-                window.location.href = universal;
+                window.location.href = universalUrl;
             }
         }
 
