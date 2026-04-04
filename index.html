@@ -3,111 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>深度链接穷举测试 - 抖音/美团</title>
+    <title>抖音官方链接跳转测试</title>
     <style>
         body {
             padding: 20px;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto;
-            background: #f0f2f5;
-            max-width: 600px;
-            margin: 0 auto;
+            background: #f5f7fa;
+            text-align: center;
         }
-        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .info {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 8px 12px;
-            margin: 12px 0;
-            font-size: 14px;
-            border-radius: 8px;
-        }
-        .section {
+        .card {
             background: white;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            margin: 40px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .section h2 {
-            font-size: 1.2rem;
-            margin: 0 0 12px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e9ecef;
+        h2 {
+            margin-top: 0;
+            color: #1e2a3a;
         }
         button {
-            display: inline-block;
             background: #007aff;
             color: white;
             border: none;
-            padding: 10px 16px;
-            border-radius: 30px;
-            font-size: 14px;
-            margin: 6px 8px 6px 0;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 20px 0;
             cursor: pointer;
-            transition: 0.2s;
+            width: 100%;
         }
-        button:active { transform: scale(0.96); background: #005bbf; }
+        button:active {
+            transform: scale(0.96);
+            background: #005bbf;
+        }
+        .info {
+            background: #f0f2f5;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 12px;
+            font-family: monospace;
+            word-break: break-all;
+            text-align: left;
+            margin: 16px 0;
+        }
         .log {
             background: #1e1e2f;
             color: #00ff9d;
             border-radius: 12px;
             padding: 12px;
-            font-family: monospace;
             font-size: 11px;
-            max-height: 400px;
+            font-family: monospace;
+            text-align: left;
+            max-height: 300px;
             overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
             margin-top: 16px;
         }
-        .log-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #ccc;
-        }
-        .clear-log {
-            background: #6c757d;
-            margin-left: 12px;
+        .note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 16px;
         }
     </style>
 </head>
 <body>
-    <h1>🔗 深度链接穷举测试</h1>
-    <div class="info" id="deviceInfo">检测中...</div>
-
-    <div class="section">
-        <h2>📱 抖音 (Douyin)</h2>
-        <button data-scheme="snssdk1128://poi/detail?id=75561483463443107990">1. poi/detail (标准)</button>
-        <button data-scheme="snssdk1128://poi/detail?id=75561483463443107990&from=webview">2. +from=webview</button>
-        <button data-scheme="snssdk1128://poi/detail?id=75561483463443107990&from=webview&refer=web">3. +from+refer</button>
-        <button data-scheme="aweme://poi/detail?id=75561483463443107990">4. aweme:// 协议</button>
-        <button data-scheme="snssdk1128://lynxview?surl=https%3A%2F%2Fwww.douyin.com%2Fpoi%2F75561483463443107990%2F">5. lynxview (surl)</button>
-        <button data-scheme="snssdk1128://webview?url=https%3A%2F%2Fwww.douyin.com%2Fpoi%2F75561483463443107990%2F">6. webview</button>
-        <button data-scheme="snssdk1128://user/profile/75561483463443107990">7. user/profile (ID作为userId)</button>
-        <button data-scheme="snssdk1128://feed">8. feed (仅唤起)</button>
-        <button data-scheme="snssdk1128://">9. 仅scheme (无路径)</button>
-        <button data-scheme="https://www.douyin.com/poi/75561483463443107990">10. Universal Link (HTTPS)</button>
-        <button data-scheme="intent://poi/detail?id=75561483463443107990#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;end;">11. Intent (标准)</button>
-        <button data-scheme="intent://poi/detail?id=75561483463443107990&from=webview#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;S.browser_fallback_url=https%3A%2F%2Fwww.douyin.com%2Fpoi%2F75561483463443107990;end;">12. Intent + fallback</button>
-    </div>
-
-    <div class="section">
-        <h2>🍔 美团 (Meituan)</h2>
-        <button data-scheme="imeituan://www.meituan.com/poi/1685933593">1. imeituan:// 标准</button>
-        <button data-scheme="imeituan://www.meituan.com/poi/1685933593?utm_source=web">2. +utm_source</button>
-        <button data-scheme="imeituan://www.meituan.com/shop/1685933593">3. shop路径</button>
-        <button data-scheme="imeituan://poi/1685933593">4. 简写路径</button>
-        <button data-scheme="https://i.meituan.com/poi/1685933593">5. Universal Link</button>
-        <button data-scheme="intent://www.meituan.com/poi/1685933593#Intent;scheme=imeituan;package=com.sankuai.meituan;end;">6. Intent</button>
-        <button data-scheme="intent://poi/1685933593#Intent;scheme=imeituan;package=com.sankuai.meituan;S.browser_fallback_url=https%3A%2F%2Fi.meituan.com%2Fpoi%2F1685933593;end;">7. Intent + fallback</button>
-    </div>
-
-    <div class="log">
-        <div class="log-title">📋 测试日志 <button class="clear-log" onclick="clearLog()">清空</button></div>
-        <div id="logContent">等待操作...</div>
+    <div class="card">
+        <h2>📱 抖音商家页跳转测试</h2>
+        <div class="info">
+            <strong>官方链接（已编码）：</strong><br>
+            <span id="shortLink">https://life-share.scsjsd.com/falcon/poi_mwa/poi_detail?poi_id=7556202622550542376&u_code=effg7l6ehf7lg5&biz_code=general&timestamp=1775298361&common_extra=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&utm_source=copy&utm_campaign=client_share&utm_medium=android&app=aweme&ug_share_id=999601aa00d3c_1775298363812</span>
+        </div>
+        <button id="jumpBtn">🚀 点击跳转商家页</button>
+        <div class="log" id="logContent">
+            📋 点击按钮后，日志会显示在这里...
+        </div>
+        <div class="note">
+            ⚠️ 注意：<br>
+            1. 请在手机自带浏览器或 Chrome 中打开（不要用微信/QQ内置浏览器）<br>
+            2. 如果跳转后只打开抖音首页而非商家页，说明该链接无法直达详情页<br>
+            3. 测试后请将结果反馈给我
+        </div>
     </div>
 
     <script>
+        // 您提供的完整官方链接
+        const OFFICIAL_URL = "https://life-share.scsjsd.com/falcon/poi_mwa/poi_detail?poi_id=7556202622550542376&u_code=effg7l6ehf7lg5&biz_code=general&timestamp=1775298361&common_extra=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&utm_source=copy&utm_campaign=client_share&utm_medium=android&app=aweme&ug_share_id=999601aa00d3c_1775298363812";
+
         const logDiv = document.getElementById('logContent');
         function log(msg) {
             const p = document.createElement('div');
@@ -117,77 +100,47 @@
             console.log(msg);
         }
 
-        function clearLog() {
-            logDiv.innerHTML = '日志已清空';
-        }
-
-        // 显示设备信息
-        const ua = navigator.userAgent;
-        const isAndroid = /Android/i.test(ua);
-        const isIOS = /iPhone|iPad|iPod/i.test(ua);
-        const isWeChat = /MicroMessenger/i.test(ua);
-        const isQQ = /QQ\//i.test(ua);
-        const brand = (() => {
-            if (/Vivo|vivo/.test(ua)) return 'vivo';
-            if (/OPPO|oppo/.test(ua)) return 'OPPO';
-            if (/Mi|Redmi/.test(ua)) return '小米';
-            if (/SM-|Samsung/.test(ua)) return '三星';
-            if (/HUAWEI|Honor/.test(ua)) return '华为/荣耀';
-            return '其他';
-        })();
-        document.getElementById('deviceInfo').innerHTML = `
-            📱 设备: ${isAndroid ? 'Android' : isIOS ? 'iOS' : 'PC'}<br>
-            🔍 品牌: ${brand}<br>
-            📲 微信: ${isWeChat ? '是' : '否'} | QQ: ${isQQ ? '是' : '否'}<br>
-            🌐 UserAgent: ${ua.substring(0, 100)}...
-        `;
-
-        // 通用跳转尝试函数
-        function tryJump(scheme, name) {
-            log(`🔘 点击: ${name}`);
-            log(`📎 链接: ${scheme}`);
-            if (!scheme) {
-                log('❌ 无效链接');
-                return;
-            }
-            // 微信环境特殊提示
+        document.getElementById('jumpBtn').addEventListener('click', () => {
+            log('用户点击按钮');
+            
+            // 检测环境
+            const ua = navigator.userAgent;
+            const isWeChat = /MicroMessenger/i.test(ua);
+            const isQQ = /QQ\//i.test(ua);
             if (isWeChat || isQQ) {
-                log('⚠️ 检测到微信/QQ环境，自定义Scheme大概率失败，建议在浏览器中测试');
-                alert('当前在微信/QQ内，自定义Scheme可能被拦截。请在右上角菜单选择“在浏览器中打开”后重试。');
+                log('⚠️ 检测到微信/QQ环境，自定义Scheme大概率被拦截');
+                alert('请在右上角菜单选择“在浏览器中打开”后重试');
                 return;
             }
-            // 尝试跳转
-            try {
-                // 使用 iframe 方式尝试（不改变当前页面历史记录）
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = scheme;
-                document.body.appendChild(iframe);
-                setTimeout(() => {
-                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                }, 1000);
-                log('✅ 已发起跳转请求（iframe方式）');
-                // 如果是 https 链接，也可以直接用 location
-                if (scheme.startsWith('http')) {
-                    log('⚠️ 注意: HTTPS链接将直接改变页面地址，5秒后可能跳转');
-                    setTimeout(() => {
-                        window.location.href = scheme;
-                    }, 500);
-                }
-            } catch (e) {
-                log(`❌ 跳转异常: ${e.message}`);
-            }
-        }
 
-        // 绑定所有按钮
-        const buttons = document.querySelectorAll('button[data-scheme]');
-        buttons.forEach(btn => {
-            const scheme = btn.getAttribute('data-scheme');
-            const btnText = btn.innerText;
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                tryJump(scheme, btnText);
-            });
+            log(`尝试跳转链接: ${OFFICIAL_URL.substring(0, 100)}...`);
+            
+            // 尝试直接打开链接
+            window.location.href = OFFICIAL_URL;
+            
+            // 设置降级检测：3秒后如果页面未隐藏（App未成功唤起），提示用户
+            let timer = setTimeout(() => {
+                log('❌ 3秒后未检测到页面隐藏，可能未安装抖音或跳转被拦截');
+                alert('未成功打开抖音，请确保已安装抖音App，并在系统设置中允许浏览器打开其他应用。');
+            }, 3000);
+            
+            // 监听页面隐藏（App被唤起时页面会进入后台）
+            const onVisibilityChange = () => {
+                if (document.hidden) {
+                    clearTimeout(timer);
+                    log('✅ 页面已隐藏，抖音App可能已成功唤起');
+                    document.removeEventListener('visibilitychange', onVisibilityChange);
+                    window.removeEventListener('blur', onVisibilityChange);
+                }
+            };
+            const onBlur = () => {
+                clearTimeout(timer);
+                log('✅ 窗口失去焦点，抖音App可能已成功唤起');
+                document.removeEventListener('visibilitychange', onVisibilityChange);
+                window.removeEventListener('blur', onBlur);
+            };
+            document.addEventListener('visibilitychange', onVisibilityChange);
+            window.addEventListener('blur', onBlur);
         });
     </script>
 </body>
