@@ -1,27 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>美团商家页 - 一键跳转</title>
+    <title>抖音商家页 - 一键跳转测试</title>
     <style>
-        body { text-align: center; font-family: system-ui; padding: 20px; }
-        button { background: #007aff; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 18px; cursor: pointer; }
+        body {
+            padding: 20px;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto;
+            background: #f5f7fa;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 32px 24px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 60px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:active {
+            transform: scale(0.96);
+            background: #005bbf;
+        }
+        .log {
+            background: #f0f2f5;
+            border-radius: 16px;
+            padding: 12px;
+            font-size: 12px;
+            font-family: monospace;
+            text-align: left;
+            margin-top: 20px;
+            word-break: break-all;
+        }
+        .note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
-    <button id="jumpBtn">打开美团商家页</button>
+    <div class="card">
+        <h2>📱 抖音商家页</h2>
+        <button id="jumpBtn">🚀 打开商家详情页</button>
+        <div class="log" id="logContent">
+            📋 点击按钮后，日志会显示在这里...
+        </div>
+        <div class="note">
+            ⚠️ 注意：<br>
+            1. 请在手机自带浏览器或 Chrome 中打开（不要用微信/QQ内置浏览器）<br>
+            2. 如果跳转失败，请确保抖音App已安装并允许关联启动<br>
+            3. 成功后应直接进入商家详情页，无需二次点击
+        </div>
+    </div>
+
     <script>
-        // 👇👇👇 请将这里替换为你提取出的真实链接 👇👇👇
-        const MEITUAN_DEEP_LINK = "imeituan://www.meituan.com/poi/1685933593";
+        // 你成功提取的抖音深层链接（完整版）
+        const DOUYIN_DEEP_LINK = "snssdk1128://poi/detail/?id=7556202622550542376&track_enter_detail=1&enter_from=link&enter_method=&extra_session_params=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&life_service_refer=life_service_web&biz_code=general&zlink=https%3A%2F%2Fz.douyin.com%2F6qoT&zlink_click_time=1775302564091";
+
+        const logDiv = document.getElementById('logContent');
+        function log(msg) {
+            const p = document.createElement('div');
+            p.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
+            logDiv.appendChild(p);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(msg);
+        }
+
+        // 检测环境
+        const ua = navigator.userAgent;
+        const isWeChat = /MicroMessenger/i.test(ua);
+        const isQQ = /QQ\//i.test(ua);
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+        log(`环境: ${isAndroid ? 'Android' : isIOS ? 'iOS' : '其他'}, 微信:${isWeChat}, QQ:${isQQ}`);
 
         document.getElementById('jumpBtn').addEventListener('click', () => {
-            window.location.href = MEITUAN_DEEP_LINK;
-            setTimeout(() => {
+            log('点击按钮，尝试唤起抖音');
+            
+            if (isWeChat || isQQ) {
+                log('⚠️ 微信/QQ环境，请引导用户在浏览器打开');
+                alert('请在右上角菜单选择“在浏览器中打开”后重试');
+                return;
+            }
+            
+            log(`唤起链接: ${DOUYIN_DEEP_LINK.substring(0, 80)}...`);
+            window.location.href = DOUYIN_DEEP_LINK;
+            
+            // 降级检测
+            let timer = setTimeout(() => {
                 if (!document.hidden) {
-                    alert("请确保已安装美团App，并允许浏览器打开其他应用。");
+                    log('❌ 未检测到页面隐藏，可能未安装抖音或被拦截');
+                    alert('请确保已安装抖音App，并在系统设置中允许浏览器打开其他应用。');
                 }
-            }, 2000);
+            }, 2500);
+            
+            const onVisibility = () => {
+                if (document.hidden) {
+                    clearTimeout(timer);
+                    log('✅ 页面已隐藏，抖音App已成功唤起');
+                    document.removeEventListener('visibilitychange', onVisibility);
+                    window.removeEventListener('blur', onVisibility);
+                }
+            };
+            const onBlur = () => {
+                clearTimeout(timer);
+                log('✅ 窗口失去焦点，抖音App已成功唤起');
+                document.removeEventListener('visibilitychange', onVisibility);
+                window.removeEventListener('blur', onBlur);
+            };
+            document.addEventListener('visibilitychange', onVisibility);
+            window.addEventListener('blur', onBlur);
         });
     </script>
 </body>
