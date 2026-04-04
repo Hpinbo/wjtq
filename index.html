@@ -3,54 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>抖音商家页跳转测试</title>
+    <title>抖音官方短链直接唤起测试</title>
+    <style>
+        body { padding: 20px; font-family: system-ui; text-align: center; }
+        button { background: #007aff; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 18px; margin: 20px; }
+        .log { background: #f0f0f0; padding: 12px; font-family: monospace; text-align: left; margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <button id="jumpBtn">打开商家页面</button>
-    <div id="log"></div>
+    <h2>测试抖音官方短链直接唤起</h2>
+    <button id="testBtn">点击测试</button>
+    <div class="log" id="log">等待测试...</div>
+    <p>注意：请确保手机已安装抖音，并在系统设置中允许浏览器打开其他应用。</p>
 
     <script>
-        // 我们提取到的官方短链
-        const OFFICIAL_URL = "https://v.douyin.com/if/XXXXXXXX/"; // 请替换为真实的官方短链
-        const DOUYIN_POI_ID = '75561483463443107990';
-        const UNIVERSAL_LINK = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
-        const logDiv = document.getElementById('log');
+        // 请从抖音商家分享中获取真实的短链，替换下面的链接
+        // 示例链接：https://v.douyin.com/if/XXXXXXXX/
+        const OFFICIAL_SHORT_LINK = "https://v.douyin.com/if/XXXXXXXX/";  // 替换为实际短链
 
+        const logDiv = document.getElementById('log');
         function log(msg) {
-            logDiv.innerHTML += `<p>${new Date().toLocaleTimeString()} - ${msg}</p>`;
+            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
             console.log(msg);
         }
 
-        function isAndroid() {
-            return /Android/i.test(navigator.userAgent);
-        }
+        document.getElementById('testBtn').onclick = () => {
+            log(`尝试打开: ${OFFICIAL_SHORT_LINK}`);
+            window.location.href = OFFICIAL_SHORT_LINK;
 
-        document.getElementById('jumpBtn').addEventListener('click', () => {
-            log(`尝试跳转，当前环境: ${isAndroid() ? 'Android' : 'iOS'}`);
-            if (isAndroid()) {
-                log(`Android: 使用官方短链跳转: ${OFFICIAL_URL}`);
-                window.location.href = OFFICIAL_URL;
-            } else {
-                log(`iOS: 使用Universal Link跳转: ${UNIVERSAL_LINK}`);
-                window.location.href = UNIVERSAL_LINK;
-            }
-
-            // 设置降级方案：如果3秒后页面没有隐藏（说明唤起可能失败），则显示提示
-            const timer = setTimeout(() => {
-                log('未检测到App切换，可能未安装抖音或跳转被拦截');
-                alert('请确保已安装抖音App。\n如已安装，请在系统设置中允许浏览器打开抖音。');
+            // 降级检测
+            let timer = setTimeout(() => {
+                log('未检测到页面隐藏，可能未唤起App');
+                alert('未能自动打开抖音，请确认已安装抖音并允许关联启动。');
             }, 3000);
 
-            // 监听页面隐藏（App被成功唤起时，页面会进入后台）
-            const onVisibilityChange = () => {
+            const onVisibility = () => {
                 if (document.hidden) {
                     clearTimeout(timer);
                     log('页面已隐藏，抖音App可能已成功唤起');
-                    document.removeEventListener('visibilitychange', onVisibilityChange);
+                    document.removeEventListener('visibilitychange', onVisibility);
                 }
             };
-            document.addEventListener('visibilitychange', onVisibilityChange);
-        });
+            document.addEventListener('visibilitychange', onVisibility);
+        };
     </script>
 </body>
 </html>
