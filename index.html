@@ -3,149 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>跳转测试 - 精准优化版</title>
+    <title>深度链接穷举测试 - 抖音/美团</title>
     <style>
-        body { padding: 20px; font-family: system-ui; background: #f5f7fa; text-align: center; }
-        button { display: block; width: 100%; max-width: 300px; margin: 20px auto; padding: 16px; font-size: 18px; border-radius: 40px; border: none; background: #007aff; color: white; cursor: pointer; }
-        .log { background: #fff; border-radius: 12px; padding: 12px; margin-top: 20px; font-size: 12px; font-family: monospace; text-align: left; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
-        .guide-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        .guide-card { background: white; border-radius: 20px; padding: 24px; text-align: center; max-width: 280px; margin: 20px; }
-        .guide-card p { font-size: 16px; margin-bottom: 20px; white-space: pre-line; }
-        .guide-card button { background: #007aff; color: white; border: none; padding: 10px 20px; border-radius: 30px; margin: 0 auto; width: auto; }
+        body {
+            padding: 20px;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto;
+            background: #f0f2f5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 8px 12px;
+            margin: 12px 0;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            margin: 0 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        button {
+            display: inline-block;
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            margin: 6px 8px 6px 0;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:active { transform: scale(0.96); background: #005bbf; }
+        .log {
+            background: #1e1e2f;
+            color: #00ff9d;
+            border-radius: 12px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 16px;
+        }
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        .clear-log {
+            background: #6c757d;
+            margin-left: 12px;
+        }
     </style>
 </head>
 <body>
-    <h2>跳转测试 - 精准优化版</h2>
-    <button id="douyinBtn">📱 抖音商家页</button>
-    <button id="meituanBtn">📱 美团商家页</button>
-    <div class="log" id="log">等待操作...</div>
-    <div id="guideOverlay" class="guide-overlay">
-        <div class="guide-card"><p id="guideMessage"></p><button onclick="closeGuide()">我知道了</button></div>
+    <h1>🔗 深度链接穷举测试</h1>
+    <div class="info" id="deviceInfo">检测中...</div>
+
+    <div class="section">
+        <h2>📱 抖音 (Douyin)</h2>
+        <button data-scheme="snssdk1128://poi/detail?id=75561483463443107990">1. poi/detail (标准)</button>
+        <button data-scheme="snssdk1128://poi/detail?id=75561483463443107990&from=webview">2. +from=webview</button>
+        <button data-scheme="snssdk1128://poi/detail?id=75561483463443107990&from=webview&refer=web">3. +from+refer</button>
+        <button data-scheme="aweme://poi/detail?id=75561483463443107990">4. aweme:// 协议</button>
+        <button data-scheme="snssdk1128://lynxview?surl=https%3A%2F%2Fwww.douyin.com%2Fpoi%2F75561483463443107990%2F">5. lynxview (surl)</button>
+        <button data-scheme="snssdk1128://webview?url=https%3A%2F%2Fwww.douyin.com%2Fpoi%2F75561483463443107990%2F">6. webview</button>
+        <button data-scheme="snssdk1128://user/profile/75561483463443107990">7. user/profile (ID作为userId)</button>
+        <button data-scheme="snssdk1128://feed">8. feed (仅唤起)</button>
+        <button data-scheme="snssdk1128://">9. 仅scheme (无路径)</button>
+        <button data-scheme="https://www.douyin.com/poi/75561483463443107990">10. Universal Link (HTTPS)</button>
+        <button data-scheme="intent://poi/detail?id=75561483463443107990#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;end;">11. Intent (标准)</button>
+        <button data-scheme="intent://poi/detail?id=75561483463443107990&from=webview#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;S.browser_fallback_url=https%3A%2F%2Fwww.douyin.com%2Fpoi%2F75561483463443107990;end;">12. Intent + fallback</button>
+    </div>
+
+    <div class="section">
+        <h2>🍔 美团 (Meituan)</h2>
+        <button data-scheme="imeituan://www.meituan.com/poi/1685933593">1. imeituan:// 标准</button>
+        <button data-scheme="imeituan://www.meituan.com/poi/1685933593?utm_source=web">2. +utm_source</button>
+        <button data-scheme="imeituan://www.meituan.com/shop/1685933593">3. shop路径</button>
+        <button data-scheme="imeituan://poi/1685933593">4. 简写路径</button>
+        <button data-scheme="https://i.meituan.com/poi/1685933593">5. Universal Link</button>
+        <button data-scheme="intent://www.meituan.com/poi/1685933593#Intent;scheme=imeituan;package=com.sankuai.meituan;end;">6. Intent</button>
+        <button data-scheme="intent://poi/1685933593#Intent;scheme=imeituan;package=com.sankuai.meituan;S.browser_fallback_url=https%3A%2F%2Fi.meituan.com%2Fpoi%2F1685933593;end;">7. Intent + fallback</button>
+    </div>
+
+    <div class="log">
+        <div class="log-title">📋 测试日志 <button class="clear-log" onclick="clearLog()">清空</button></div>
+        <div id="logContent">等待操作...</div>
     </div>
 
     <script>
-        const DOUYIN_POI_ID = '75561483463443107990';
-        const MEITUAN_POI_ID = '1685933593';
-
-        const logDiv = document.getElementById('log');
+        const logDiv = document.getElementById('logContent');
         function log(msg) {
             const p = document.createElement('div');
             p.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
             logDiv.appendChild(p);
+            logDiv.scrollTop = logDiv.scrollHeight;
             console.log(msg);
         }
 
-        function showGuide(msg) {
-            document.getElementById('guideMessage').innerText = msg;
-            document.getElementById('guideOverlay').style.display = 'flex';
+        function clearLog() {
+            logDiv.innerHTML = '日志已清空';
         }
-        function closeGuide() { document.getElementById('guideOverlay').style.display = 'none'; }
 
+        // 显示设备信息
         const ua = navigator.userAgent;
         const isAndroid = /Android/i.test(ua);
         const isIOS = /iPhone|iPad|iPod/i.test(ua);
         const isWeChat = /MicroMessenger/i.test(ua);
         const isQQ = /QQ\//i.test(ua);
-        log(`环境: ${isAndroid ? 'Android' : isIOS ? 'iOS' : 'PC'}, 微信:${isWeChat}, QQ:${isQQ}`);
+        const brand = (() => {
+            if (/Vivo|vivo/.test(ua)) return 'vivo';
+            if (/OPPO|oppo/.test(ua)) return 'OPPO';
+            if (/Mi|Redmi/.test(ua)) return '小米';
+            if (/SM-|Samsung/.test(ua)) return '三星';
+            if (/HUAWEI|Honor/.test(ua)) return '华为/荣耀';
+            return '其他';
+        })();
+        document.getElementById('deviceInfo').innerHTML = `
+            📱 设备: ${isAndroid ? 'Android' : isIOS ? 'iOS' : 'PC'}<br>
+            🔍 品牌: ${brand}<br>
+            📲 微信: ${isWeChat ? '是' : '否'} | QQ: ${isQQ ? '是' : '否'}<br>
+            🌐 UserAgent: ${ua.substring(0, 100)}...
+        `;
 
-        // 抖音跳转（优化版）
-        function jumpDouyin() {
-            if (isWeChat || isQQ) {
-                showGuide('请在右上角菜单选择“在浏览器中打开”');
+        // 通用跳转尝试函数
+        function tryJump(scheme, name) {
+            log(`🔘 点击: ${name}`);
+            log(`📎 链接: ${scheme}`);
+            if (!scheme) {
+                log('❌ 无效链接');
                 return;
             }
-
-            // 方案一：aweme:// 协议（优先推荐）
-            const awemeUrl = `aweme://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
-            // 方案二：snssdk1128://lynxview（特殊格式）
-            const lynxviewUrl = `snssdk1128://lynxview?surl=${encodeURIComponent(`https://www.douyin.com/poi/${DOUYIN_POI_ID}`)}`;
-            // 方案三：snssdk1128:// 标准格式（备选）
-            const schemeUrl = `snssdk1128://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
-            const universalUrl = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
-
-            if (isIOS) {
-                log('iOS: 优先使用 Universal Link');
-                window.location.href = universalUrl;
-                setTimeout(() => { log('降级: Scheme'); window.location.href = schemeUrl; }, 800);
-                setTimeout(() => { log('最终降级: 网页'); window.location.href = universalUrl; }, 2500);
-            } else if (isAndroid) {
-                log('Android: 优先使用 aweme:// 协议');
+            // 微信环境特殊提示
+            if (isWeChat || isQQ) {
+                log('⚠️ 检测到微信/QQ环境，自定义Scheme大概率失败，建议在浏览器中测试');
+                alert('当前在微信/QQ内，自定义Scheme可能被拦截。请在右上角菜单选择“在浏览器中打开”后重试。');
+                return;
+            }
+            // 尝试跳转
+            try {
+                // 使用 iframe 方式尝试（不改变当前页面历史记录）
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
-                iframe.src = awemeUrl;
+                iframe.src = scheme;
                 document.body.appendChild(iframe);
-                setTimeout(() => iframe.remove(), 500);
-
-                // 降级：尝试 lynxview 格式
                 setTimeout(() => {
-                    log('降级: 尝试 lynxview 格式');
-                    const iframe2 = document.createElement('iframe');
-                    iframe2.style.display = 'none';
-                    iframe2.src = lynxviewUrl;
-                    document.body.appendChild(iframe2);
-                    setTimeout(() => iframe2.remove(), 500);
-                }, 800);
-
-                // 再降级：尝试标准 scheme
-                setTimeout(() => {
-                    log('降级: 尝试标准 scheme');
-                    window.location.href = schemeUrl;
-                }, 1300);
-
-                // 最终降级
-                setTimeout(() => {
-                    log('最终降级: 打开网页');
-                    window.location.href = universalUrl;
-                }, 2500);
-            } else {
-                window.location.href = universalUrl;
+                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                }, 1000);
+                log('✅ 已发起跳转请求（iframe方式）');
+                // 如果是 https 链接，也可以直接用 location
+                if (scheme.startsWith('http')) {
+                    log('⚠️ 注意: HTTPS链接将直接改变页面地址，5秒后可能跳转');
+                    setTimeout(() => {
+                        window.location.href = scheme;
+                    }, 500);
+                }
+            } catch (e) {
+                log(`❌ 跳转异常: ${e.message}`);
             }
         }
 
-        // 美团跳转（优化版）
-        function jumpMeituan() {
-            if (isWeChat || isQQ) {
-                showGuide('请在右上角菜单选择“在浏览器中打开”');
-                return;
-            }
-
-            // 标准 Intent URL（指定完整HTTP路径）
-            const intentUrl = `intent://www.meituan.com/poi/${MEITUAN_POI_ID}#Intent;scheme=imeituan;package=com.sankuai.meituan;end;`;
-            const schemeUrl = `imeituan://www.meituan.com/poi/${MEITUAN_POI_ID}`;
-            const universalUrl = `https://i.meituan.com/poi/${MEITUAN_POI_ID}`;
-
-            if (isIOS) {
-                log('iOS: 优先 Universal Link');
-                window.location.href = universalUrl;
-                setTimeout(() => { window.location.href = schemeUrl; }, 800);
-                setTimeout(() => { window.location.href = universalUrl; }, 2500);
-            } else if (isAndroid) {
-                log('Android: 优先使用标准 Intent');
-                // 先检测 Intent 是否可用
-                log('尝试 Intent 跳转...');
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = intentUrl;
-                document.body.appendChild(iframe);
-                setTimeout(() => iframe.remove(), 500);
-
-                // 降级：尝试 Scheme
-                setTimeout(() => {
-                    log('降级: 尝试 Scheme');
-                    window.location.href = schemeUrl;
-                }, 800);
-                // 最终降级到网页
-                setTimeout(() => {
-                    log('最终降级: 打开网页');
-                    window.location.href = universalUrl;
-                }, 2500);
-            } else {
-                window.location.href = universalUrl;
-            }
-        }
-
-        document.getElementById('douyinBtn').onclick = () => { log('点击抖音'); jumpDouyin(); };
-        document.getElementById('meituanBtn').onclick = () => { log('点击美团'); jumpMeituan(); };
+        // 绑定所有按钮
+        const buttons = document.querySelectorAll('button[data-scheme]');
+        buttons.forEach(btn => {
+            const scheme = btn.getAttribute('data-scheme');
+            const btnText = btn.innerText;
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                tryJump(scheme, btnText);
+            });
+        });
     </script>
 </body>
 </html>
