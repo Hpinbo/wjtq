@@ -1,55 +1,55 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>抖音商家页 - 智能跳转</title>
-    <style>
-        /* 样式部分保持不变，这里只展示核心代码，你可以保留之前的样式 */
-        body { ... }
-        .guide-overlay { ... }
-        /* ... 其他样式 ... */
-    </style>
+    <title>抖音商家页跳转测试</title>
 </head>
 <body>
-    <!-- 你的页面结构，例如商家卡片等 -->
-    ...
+    <button id="jumpBtn">打开商家页面</button>
+    <div id="log"></div>
 
     <script>
-        // ... 环境检测等逻辑 ...
-        const OFFICIAL_URL = "https://life-share.scsjsd.com/falcon/poi_mwa/poi_detail?poi_id=7556202622550542376&u_code=effg7l6ehf7lg5&biz_code=general&timestamp=1775298361&common_extra=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&utm_source=copy&utm_campaign=client_share&utm_medium=android&app=aweme&ug_share_id=999601aa00d3c_1775298363812";
+        // 我们提取到的官方短链
+        const OFFICIAL_URL = "https://v.douyin.com/if/XXXXXXXX/"; // 请替换为真实的官方短链
+        const DOUYIN_POI_ID = '75561483463443107990';
+        const UNIVERSAL_LINK = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
+        const logDiv = document.getElementById('log');
 
-        // 优化后的唤起函数：直接在非受限环境中尝试唤起
-        function openAppDirectly(url) {
-            // 检测是否为微信/QQ等受限环境
-            if (/MicroMessenger/i.test(navigator.userAgent) || /QQ\//i.test(navigator.userAgent)) {
-                alert("请在浏览器中打开此页面以获得最佳体验。");
-                return;
-            }
-            // 直接尝试唤起
-            window.location.href = url;
-            
-            // 设置一个降级方案
-            let timer = setTimeout(() => {
-                if (confirm("检测到抖音可能未安装或跳转失败，是否查看网页版？")) {
-                    // 可以跳转到一个网页版的商家页面，或者引导下载
-                    window.location.href = "https://www.douyin.com";
-                }
-            }, 2000);
-            
-            document.addEventListener('visibilitychange', function onVisibilityChange() {
-                if (document.hidden) {
-                    clearTimeout(timer);
-                    document.removeEventListener('visibilitychange', onVisibilityChange);
-                    console.log("App 已成功唤起");
-                }
-            });
+        function log(msg) {
+            logDiv.innerHTML += `<p>${new Date().toLocaleTimeString()} - ${msg}</p>`;
+            console.log(msg);
         }
 
-        // 在页面加载时或用户点击按钮时调用，实现“自动”跳转
-        // 例如，在页面加载后自动执行：
-        window.addEventListener('load', function() {
-            openAppDirectly(OFFICIAL_URL);
+        function isAndroid() {
+            return /Android/i.test(navigator.userAgent);
+        }
+
+        document.getElementById('jumpBtn').addEventListener('click', () => {
+            log(`尝试跳转，当前环境: ${isAndroid() ? 'Android' : 'iOS'}`);
+            if (isAndroid()) {
+                log(`Android: 使用官方短链跳转: ${OFFICIAL_URL}`);
+                window.location.href = OFFICIAL_URL;
+            } else {
+                log(`iOS: 使用Universal Link跳转: ${UNIVERSAL_LINK}`);
+                window.location.href = UNIVERSAL_LINK;
+            }
+
+            // 设置降级方案：如果3秒后页面没有隐藏（说明唤起可能失败），则显示提示
+            const timer = setTimeout(() => {
+                log('未检测到App切换，可能未安装抖音或跳转被拦截');
+                alert('请确保已安装抖音App。\n如已安装，请在系统设置中允许浏览器打开抖音。');
+            }, 3000);
+
+            // 监听页面隐藏（App被成功唤起时，页面会进入后台）
+            const onVisibilityChange = () => {
+                if (document.hidden) {
+                    clearTimeout(timer);
+                    log('页面已隐藏，抖音App可能已成功唤起');
+                    document.removeEventListener('visibilitychange', onVisibilityChange);
+                }
+            };
+            document.addEventListener('visibilitychange', onVisibilityChange);
         });
     </script>
 </body>
