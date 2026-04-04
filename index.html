@@ -1,27 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>抖音官方链接跳转测试</title>
+    <title>抖音商家页 - 智能跳转</title>
     <style>
         body {
             padding: 20px;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto;
             background: #f5f7fa;
             text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .card {
             background: white;
             border-radius: 20px;
-            padding: 24px;
+            padding: 32px 24px;
             max-width: 400px;
-            margin: 40px auto;
+            margin: 20px auto;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        h2 {
-            margin-top: 0;
-            color: #1e2a3a;
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007aff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         button {
             background: #007aff;
@@ -31,14 +47,11 @@
             border-radius: 40px;
             font-size: 18px;
             font-weight: 600;
-            margin: 20px 0;
+            margin-top: 20px;
             cursor: pointer;
             width: 100%;
         }
-        button:active {
-            transform: scale(0.96);
-            background: #005bbf;
-        }
+        button:active { transform: scale(0.96); background: #005bbf; }
         .info {
             background: #f0f2f5;
             border-radius: 12px;
@@ -49,98 +62,89 @@
             text-align: left;
             margin: 16px 0;
         }
-        .log {
-            background: #1e1e2f;
-            color: #00ff9d;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 11px;
-            font-family: monospace;
-            text-align: left;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 16px;
-        }
         .note {
             font-size: 13px;
             color: #666;
             margin-top: 16px;
+            text-align: left;
         }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>📱 抖音商家页跳转测试</h2>
-        <div class="info">
-            <strong>官方链接（已编码）：</strong><br>
-            <span id="shortLink">https://life-share.scsjsd.com/falcon/poi_mwa/poi_detail?poi_id=7556202622550542376&u_code=effg7l6ehf7lg5&biz_code=general&timestamp=1775298361&common_extra=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&utm_source=copy&utm_campaign=client_share&utm_medium=android&app=aweme&ug_share_id=999601aa00d3c_1775298363812</span>
+        <div id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>正在跳转中...</p>
         </div>
-        <button id="jumpBtn">🚀 点击跳转商家页</button>
-        <div class="log" id="logContent">
-            📋 点击按钮后，日志会显示在这里...
+        <div id="manualButton" style="display:none;">
+            <button id="jumpBtn">📱 点击打开抖音商家页</button>
+        </div>
+        <div class="info" id="debugInfo">
+            <strong>🔍 调试信息</strong><br>
+            <span id="logContent">初始化...</span>
         </div>
         <div class="note">
-            ⚠️ 注意：<br>
-            1. 请在手机自带浏览器或 Chrome 中打开（不要用微信/QQ内置浏览器）<br>
-            2. 如果跳转后只打开抖音首页而非商家页，说明该链接无法直达详情页<br>
-            3. 测试后请将结果反馈给我
+            ⚠️ 如果未能自动跳转，请点击上方按钮手动打开。
         </div>
     </div>
 
     <script>
-        // 您提供的完整官方链接
+        // 使用您提供的官方链接
         const OFFICIAL_URL = "https://life-share.scsjsd.com/falcon/poi_mwa/poi_detail?poi_id=7556202622550542376&u_code=effg7l6ehf7lg5&biz_code=general&timestamp=1775298361&common_extra=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&utm_source=copy&utm_campaign=client_share&utm_medium=android&app=aweme&ug_share_id=999601aa00d3c_1775298363812";
-
         const logDiv = document.getElementById('logContent');
         function log(msg) {
-            const p = document.createElement('div');
-            p.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
-            logDiv.appendChild(p);
+            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
             console.log(msg);
         }
 
-        document.getElementById('jumpBtn').addEventListener('click', () => {
-            log('用户点击按钮');
+        // 检测是否为微信/QQ环境
+        const ua = navigator.userAgent;
+        const isWeChat = /MicroMessenger/i.test(ua);
+        const isQQ = /QQ\//i.test(ua);
+        
+        if (isWeChat || isQQ) {
+            log('⚠️ 检测到微信/QQ环境，将跳转到官方分享页进行手动唤起');
+            // 微信/QQ环境直接跳转到官方分享页，让用户手动点击
+            window.location.href = OFFICIAL_URL;
+        } else {
+            // 非微信/QQ环境，尝试自动唤起
+            log('检测到普通浏览器环境，尝试自动唤起抖音');
             
-            // 检测环境
-            const ua = navigator.userAgent;
-            const isWeChat = /MicroMessenger/i.test(ua);
-            const isQQ = /QQ\//i.test(ua);
-            if (isWeChat || isQQ) {
-                log('⚠️ 检测到微信/QQ环境，自定义Scheme大概率被拦截');
-                alert('请在右上角菜单选择“在浏览器中打开”后重试');
-                return;
-            }
-
-            log(`尝试跳转链接: ${OFFICIAL_URL.substring(0, 100)}...`);
-            
-            // 尝试直接打开链接
+            // 尝试直接通过官方链接唤起
             window.location.href = OFFICIAL_URL;
             
-            // 设置降级检测：3秒后如果页面未隐藏（App未成功唤起），提示用户
-            let timer = setTimeout(() => {
-                log('❌ 3秒后未检测到页面隐藏，可能未安装抖音或跳转被拦截');
-                alert('未成功打开抖音，请确保已安装抖音App，并在系统设置中允许浏览器打开其他应用。');
+            // 设置超时，如果3秒后页面未隐藏（App未唤起），则显示手动按钮
+            let autoJumpTimer = setTimeout(() => {
+                log('⚠️ 自动跳转未成功，可能未安装抖音或系统限制，显示手动按钮');
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('manualButton').style.display = 'block';
             }, 3000);
             
-            // 监听页面隐藏（App被唤起时页面会进入后台）
+            // 监听页面可见性变化，如果页面隐藏说明App可能被唤起了
             const onVisibilityChange = () => {
                 if (document.hidden) {
-                    clearTimeout(timer);
+                    clearTimeout(autoJumpTimer);
                     log('✅ 页面已隐藏，抖音App可能已成功唤起');
                     document.removeEventListener('visibilitychange', onVisibilityChange);
                     window.removeEventListener('blur', onVisibilityChange);
                 }
             };
             const onBlur = () => {
-                clearTimeout(timer);
+                clearTimeout(autoJumpTimer);
                 log('✅ 窗口失去焦点，抖音App可能已成功唤起');
                 document.removeEventListener('visibilitychange', onVisibilityChange);
                 window.removeEventListener('blur', onBlur);
             };
             document.addEventListener('visibilitychange', onVisibilityChange);
             window.addEventListener('blur', onBlur);
+        }
+        
+        // 手动跳转按钮
+        document.getElementById('jumpBtn').addEventListener('click', () => {
+            log('用户点击手动跳转按钮');
+            window.location.href = OFFICIAL_URL;
         });
     </script>
 </body>
