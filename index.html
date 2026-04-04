@@ -3,114 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>商家好评 · 增强调试版</title>
-    <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+    <title>跳转测试 - 借鉴小红书方案</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
-        body { background: #f5f7fa; padding: 20px; }
-        .container { max-width: 480px; margin: 0 auto; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        button { background: #007aff; color: white; border: none; padding: 12px 20px; border-radius: 30px; font-size: 16px; margin: 10px 0; width: 100%; }
-        .log { background: #f0f0f0; border-radius: 12px; padding: 12px; font-family: monospace; font-size: 12px; margin-top: 20px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
-        .title { font-weight: bold; margin-bottom: 8px; }
-        .error { color: red; }
-        .success { color: green; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #1e2a3a;
+        }
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 14px 24px;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 12px 0;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:active {
+            transform: scale(0.96);
+            background: #005fc1;
+        }
+        .log {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 12px;
+            margin-top: 24px;
+            font-family: monospace;
+            font-size: 12px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #333;
+        }
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #666;
+        }
+        .note {
+            font-size: 12px;
+            color: #888;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h3>🔧 增强调试模式</h3>
-    <button id="testDouyin">测试抖音跳转</button>
-    <button id="testMeituan">测试美团跳转</button>
-    <div class="log" id="logArea">
-        <div class="title">📋 详细日志：</div>
-        <div>等待操作...</div>
+    <h2>📱 跳转测试</h2>
+    <p style="margin-bottom: 16px; color: #666;">借鉴小红书方案：Universal Link 优先 → Scheme 降级</p>
+    <button id="btnDouyin">🎵 测试抖音跳转</button>
+    <button id="btnMeituan">🍔 测试美团跳转</button>
+    <div class="log">
+        <div class="log-title">📋 操作日志：</div>
+        <div id="logContent">等待操作...</div>
     </div>
+    <div class="note">⚠️ 请在手机自带浏览器或 Chrome 中测试。若未安装App，会停留在网页版。</div>
 </div>
 
 <script>
-    // 配置
-    const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5';
-    const CLOUD_FUNCTION_NAME = 'scfhelloworld';
-
-    const logDiv = document.getElementById('logArea');
-    function log(msg, type = 'info') {
+    const logDiv = document.getElementById('logContent');
+    function log(msg, isError = false) {
         const line = document.createElement('div');
         line.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
-        if (type === 'error') line.style.color = 'red';
-        if (type === 'success') line.style.color = 'green';
+        if (isError) line.style.color = 'red';
         logDiv.appendChild(line);
         logDiv.scrollTop = logDiv.scrollHeight;
         console.log(msg);
     }
 
-    let cloudApp = null;
+    // 固定 POI ID（你可以替换成真实的）
+    const DOUYIN_POI_ID = '75561483463443107990';
+    const MEITUAN_POI_ID = '1685933593';
 
-    async function initCloud() {
-        log('初始化云开发...');
-        if (typeof cloudbase === 'undefined') {
-            log('❌ cloudbase SDK 未加载', 'error');
-            return false;
-        }
-        try {
-            cloudApp = cloudbase.init({ env: CLOUD_ENV });
-            await cloudApp.auth().signInAnonymously();
-            log('✅ 匿名登录成功', 'success');
-            return true;
-        } catch (err) {
-            log(`❌ 初始化失败: ${err.message}`, 'error');
-            return false;
-        }
+    // Universal Link（优先级最高）
+    const douyinUniversal = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
+    const meituanUniversal = `https://i.meituan.com/poi/${MEITUAN_POI_ID}`;
+
+    // Scheme 降级
+    const douyinScheme = `snssdk1128://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
+    const meituanScheme = `imeituan://www.meituan.com/poi/${MEITUAN_POI_ID}`;
+
+    // 检测环境
+    const ua = navigator.userAgent;
+    const isIOS = /iPhone|iPad|iPod/.test(ua);
+    const isAndroid = /Android/.test(ua);
+    const isWeChat = /MicroMessenger/.test(ua);
+    const isQQ = /QQ\//.test(ua);
+    const isAlipay = /AlipayClient/.test(ua);
+
+    log(`设备: ${isIOS ? 'iOS' : (isAndroid ? 'Android' : '其他')}`);
+    log(`微信: ${isWeChat ? '是' : '否'}, QQ: ${isQQ ? '是' : '否'}, 支付宝: ${isAlipay ? '是' : '否'}`);
+
+    // 显示引导层（微信环境）
+    function showGuide() {
+        alert('请点击右上角菜单，选择“在浏览器中打开”');
+        // 也可以创建一个浮层，这里简单用 alert
     }
 
-    async function callFunction(platform) {
-        if (!cloudApp) {
-            log('云开发未初始化', 'error');
-            return null;
-        }
-        log(`📞 调用云函数 ${CLOUD_FUNCTION_NAME}，参数: platform=${platform}`);
-        try {
-            const res = await cloudApp.callFunction({
-                name: CLOUD_FUNCTION_NAME,
-                data: {
-                    platform: platform,
-                    ua: navigator.userAgent
-                }
-            });
-            log(`✅ 云函数调用成功，返回: ${JSON.stringify(res.result)}`, 'success');
-            if (res && res.result) {
-                return res.result;
-            } else {
-                throw new Error('返回数据异常');
-            }
-        } catch (err) {
-            log(`❌ 调用失败: ${err.message}`, 'error');
-            if (err.message.includes('401')) log('提示：请检查安全域名或环境ID', 'error');
-            if (err.message.includes('FUNCTION_NOT_FOUND')) log('提示：云函数名称错误或未部署', 'error');
-            return null;
-        }
-    }
-
-    function tryOpenApp(sequence, fallback, appName) {
-        log(`🚀 开始唤起 ${appName}，sequence 共 ${sequence.length} 条指令`);
-        for (let i = 0; i < sequence.length; i++) {
-            log(`  指令${i+1}: type=${sequence[i].type}, url=${sequence[i].url.substring(0, 80)}...`);
-        }
+    // 核心跳转函数（模仿小红书方案）
+    function jumpWithUniversalFirst(universalLink, schemeUrl, appName) {
+        log(`开始尝试唤起 ${appName}`);
+        log(`优先尝试 Universal Link: ${universalLink}`);
 
         let appLaunched = false;
-        let iframe = null;
         let timer = null;
 
+        // 监听页面隐藏（App被唤起时浏览器会进入后台）
         const onVisibility = () => {
             if (document.hidden) {
-                log(`✅ 检测到页面隐藏，${appName} 已打开`, 'success');
                 appLaunched = true;
                 cleanUp();
+                log(`✅ ${appName} 已成功唤起`);
             }
         };
         const onBlur = () => {
-            log(`✅ 窗口失去焦点，${appName} 可能已打开`, 'success');
             appLaunched = true;
             cleanUp();
+            log(`✅ ${appName} 已成功唤起`);
         };
         document.addEventListener('visibilitychange', onVisibility);
         window.addEventListener('blur', onBlur);
@@ -118,73 +146,63 @@
         function cleanUp() {
             document.removeEventListener('visibilitychange', onVisibility);
             window.removeEventListener('blur', onBlur);
-            if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-            iframe = null;
             if (timer) clearTimeout(timer);
         }
 
-        function tryNext(index) {
-            if (appLaunched || index >= sequence.length) {
-                if (appLaunched) log(`🎉 唤起成功，停止后续尝试`);
-                else log(`⚠️ 所有指令执行完毕，未检测到唤起`, 'error');
-                return;
-            }
-            const item = sequence[index];
-            log(`▶️ 执行指令${index+1}: type=${item.type}`);
-            
-            if (item.type === 'scheme' || item.type === 'intent') {
-                iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = item.url;
-                document.body.appendChild(iframe);
-                log(`  已创建iframe加载: ${item.url.substring(0, 100)}`);
-                setTimeout(() => {
-                    if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                    iframe = null;
-                    log(`  iframe已移除`);
-                }, 800);
-            } else if (item.type === 'universal') {
-                const link = document.createElement('a');
-                link.href = item.url;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                log(`  已触发a标签点击: ${item.url.substring(0, 100)}`);
-                setTimeout(() => document.body.removeChild(link), 200);
-            }
-            setTimeout(() => tryNext(index + 1), 500);
-        }
+        // 先尝试 Universal Link（直接修改 location）
+        window.location.href = universalLink;
 
-        tryNext(0);
+        // 设置降级：如果 2.5 秒后没有检测到 App 唤起，则尝试 Scheme
         timer = setTimeout(() => {
             if (!appLaunched) {
-                log(`⏰ 3秒后未检测到App切换，降级到: ${fallback}`, 'error');
-                cleanUp();
-                window.location.href = fallback;
+                log(`Universal Link 未唤起，尝试降级 Scheme: ${schemeUrl}`);
+                // 对于 Android，使用 iframe 方式尝试 Scheme（避免页面跳转）
+                if (isAndroid) {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = schemeUrl;
+                    document.body.appendChild(iframe);
+                    setTimeout(() => {
+                        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                    }, 1000);
+                } else {
+                    window.location.href = schemeUrl;
+                }
+                // 再给 2 秒时间，若仍未唤起则提示
+                setTimeout(() => {
+                    if (!appLaunched) {
+                        cleanUp();
+                        log(`❌ 未能唤起 ${appName}，请确保已安装App`, true);
+                        alert(`未能唤起${appName}，请确保已安装抖音/美团，或在浏览器中打开`);
+                    }
+                }, 2000);
             }
-        }, 3500);
+        }, 2500);
     }
 
-    async function onJump(platform) {
-        log(`===== 用户点击 ${platform} =====`);
-        const config = await callFunction(platform);
-        if (!config) {
-            log(`❌ 无法获取跳转配置`, 'error');
+    // 入口：处理环境判断
+    function onJump(platform) {
+        // 微信/QQ/支付宝 直接引导，不尝试跳转
+        if (isWeChat || isQQ || isAlipay) {
+            log(`检测到受限环境（${isWeChat ? '微信' : isQQ ? 'QQ' : '支付宝'}），显示引导`, true);
+            showGuide();
             return;
         }
-        const { sequence, fallback } = config;
-        if (!sequence || sequence.length === 0) {
-            log(`❌ sequence为空，直接跳转降级页面: ${fallback}`, 'error');
-            window.location.href = fallback;
-            return;
+
+        if (platform === 'douyin') {
+            jumpWithUniversalFirst(douyinUniversal, douyinScheme, '抖音');
+        } else if (platform === 'meituan') {
+            jumpWithUniversalFirst(meituanUniversal, meituanScheme, '美团');
         }
-        tryOpenApp(sequence, fallback, platform === 'douyin' ? '抖音' : '美团');
     }
 
-    window.onload = async () => {
-        await initCloud();
-        document.getElementById('testDouyin').onclick = () => onJump('douyin');
-        document.getElementById('testMeituan').onclick = () => onJump('meituan');
+    document.getElementById('btnDouyin').onclick = () => {
+        log('===== 用户点击抖音测试 =====');
+        onJump('douyin');
+    };
+    document.getElementById('btnMeituan').onclick = () => {
+        log('===== 用户点击美团测试 =====');
+        onJump('meituan');
     };
 </script>
 </body>
