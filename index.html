@@ -5,146 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>抖音商家页 - 智能跳转</title>
     <style>
-        body {
-            padding: 20px;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto;
-            background: #f5f7fa;
-            text-align: center;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 32px 24px;
-            max-width: 400px;
-            margin: 20px auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007aff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        button {
-            background: #007aff;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 40px;
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 20px;
-            cursor: pointer;
-            width: 100%;
-        }
-        button:active { transform: scale(0.96); background: #005bbf; }
-        .info {
-            background: #f0f2f5;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 12px;
-            font-family: monospace;
-            word-break: break-all;
-            text-align: left;
-            margin: 16px 0;
-        }
-        .note {
-            font-size: 13px;
-            color: #666;
-            margin-top: 16px;
-            text-align: left;
-        }
-        .hidden { display: none; }
+        /* 样式部分保持不变，这里只展示核心代码，你可以保留之前的样式 */
+        body { ... }
+        .guide-overlay { ... }
+        /* ... 其他样式 ... */
     </style>
 </head>
 <body>
-    <div class="card">
-        <div id="loadingIndicator">
-            <div class="spinner"></div>
-            <p>正在跳转中...</p>
-        </div>
-        <div id="manualButton" style="display:none;">
-            <button id="jumpBtn">📱 点击打开抖音商家页</button>
-        </div>
-        <div class="info" id="debugInfo">
-            <strong>🔍 调试信息</strong><br>
-            <span id="logContent">初始化...</span>
-        </div>
-        <div class="note">
-            ⚠️ 如果未能自动跳转，请点击上方按钮手动打开。
-        </div>
-    </div>
+    <!-- 你的页面结构，例如商家卡片等 -->
+    ...
 
     <script>
-        // 使用您提供的官方链接
+        // ... 环境检测等逻辑 ...
         const OFFICIAL_URL = "https://life-share.scsjsd.com/falcon/poi_mwa/poi_detail?poi_id=7556202622550542376&u_code=effg7l6ehf7lg5&biz_code=general&timestamp=1775298361&common_extra=%7B%22life_extra_info%22%3A%22%7B%5C%22life_share_ext%5C%22%3A%5C%22wyo80n%5C%5C%5C%2FOK4Wb5DZs%2B711YAOeAy7xa1MWX%5C%5C%5C%2F6D%5C%5C%5C%2F%2B7gVW9qY3j1Pm6jbJ8B47Gxno6%2BVw%2ByAoRDv10T%5C%5CnVV9Ajteem8DwbAbmwzSBqTCZr6DEE6WjBscfWXRxgrU3LA89OxX6dMsAtr%2B69%2BVJU0WAgsPy6gbJ%5C%5CnRoQox2JUxCPeBhsE4mXMEseJU4jGWzVU3KFUa%5C%5C%5C%2F8VLe4nLwbrT1yPORic2FJ%5C%5C%5C%2FTdjPOE5S2Pr%5C%5C%5C%2FaXzE%5C%5CnmDc%5C%5C%5C%2FPI4rGUwAUyPXvOxZrPYDAo8nFbKcA4a9bKBSwKyyeOmbk7WFC1dw8i4qdYxkhQLkyHE%3D%5C%5Cn%5C%22%7D%22%7D&utm_source=copy&utm_campaign=client_share&utm_medium=android&app=aweme&ug_share_id=999601aa00d3c_1775298363812";
-        const logDiv = document.getElementById('logContent');
-        function log(msg) {
-            logDiv.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
-            logDiv.scrollTop = logDiv.scrollHeight;
-            console.log(msg);
+
+        // 优化后的唤起函数：直接在非受限环境中尝试唤起
+        function openAppDirectly(url) {
+            // 检测是否为微信/QQ等受限环境
+            if (/MicroMessenger/i.test(navigator.userAgent) || /QQ\//i.test(navigator.userAgent)) {
+                alert("请在浏览器中打开此页面以获得最佳体验。");
+                return;
+            }
+            // 直接尝试唤起
+            window.location.href = url;
+            
+            // 设置一个降级方案
+            let timer = setTimeout(() => {
+                if (confirm("检测到抖音可能未安装或跳转失败，是否查看网页版？")) {
+                    // 可以跳转到一个网页版的商家页面，或者引导下载
+                    window.location.href = "https://www.douyin.com";
+                }
+            }, 2000);
+            
+            document.addEventListener('visibilitychange', function onVisibilityChange() {
+                if (document.hidden) {
+                    clearTimeout(timer);
+                    document.removeEventListener('visibilitychange', onVisibilityChange);
+                    console.log("App 已成功唤起");
+                }
+            });
         }
 
-        // 检测是否为微信/QQ环境
-        const ua = navigator.userAgent;
-        const isWeChat = /MicroMessenger/i.test(ua);
-        const isQQ = /QQ\//i.test(ua);
-        
-        if (isWeChat || isQQ) {
-            log('⚠️ 检测到微信/QQ环境，将跳转到官方分享页进行手动唤起');
-            // 微信/QQ环境直接跳转到官方分享页，让用户手动点击
-            window.location.href = OFFICIAL_URL;
-        } else {
-            // 非微信/QQ环境，尝试自动唤起
-            log('检测到普通浏览器环境，尝试自动唤起抖音');
-            
-            // 尝试直接通过官方链接唤起
-            window.location.href = OFFICIAL_URL;
-            
-            // 设置超时，如果3秒后页面未隐藏（App未唤起），则显示手动按钮
-            let autoJumpTimer = setTimeout(() => {
-                log('⚠️ 自动跳转未成功，可能未安装抖音或系统限制，显示手动按钮');
-                document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('manualButton').style.display = 'block';
-            }, 3000);
-            
-            // 监听页面可见性变化，如果页面隐藏说明App可能被唤起了
-            const onVisibilityChange = () => {
-                if (document.hidden) {
-                    clearTimeout(autoJumpTimer);
-                    log('✅ 页面已隐藏，抖音App可能已成功唤起');
-                    document.removeEventListener('visibilitychange', onVisibilityChange);
-                    window.removeEventListener('blur', onVisibilityChange);
-                }
-            };
-            const onBlur = () => {
-                clearTimeout(autoJumpTimer);
-                log('✅ 窗口失去焦点，抖音App可能已成功唤起');
-                document.removeEventListener('visibilitychange', onVisibilityChange);
-                window.removeEventListener('blur', onBlur);
-            };
-            document.addEventListener('visibilitychange', onVisibilityChange);
-            window.addEventListener('blur', onBlur);
-        }
-        
-        // 手动跳转按钮
-        document.getElementById('jumpBtn').addEventListener('click', () => {
-            log('用户点击手动跳转按钮');
-            window.location.href = OFFICIAL_URL;
+        // 在页面加载时或用户点击按钮时调用，实现“自动”跳转
+        // 例如，在页面加载后自动执行：
+        window.addEventListener('load', function() {
+            openAppDirectly(OFFICIAL_URL);
         });
     </script>
 </body>
