@@ -1,209 +1,300 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>跳转测试 - 借鉴小红书方案</title>
+    <title>跳转测试 - 品牌优化版</title>
     <style>
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
             padding: 20px;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto;
+            background: #f5f7fa;
             text-align: center;
         }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h2 {
-            margin-bottom: 20px;
-            color: #1e2a3a;
-        }
         button {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            padding: 16px;
+            font-size: 18px;
+            border-radius: 40px;
+            border: none;
             background: #007aff;
             color: white;
-            border: none;
-            border-radius: 40px;
-            padding: 14px 24px;
-            font-size: 18px;
-            font-weight: 600;
-            margin: 12px 0;
-            width: 100%;
             cursor: pointer;
-            transition: 0.2s;
-        }
-        button:active {
-            transform: scale(0.96);
-            background: #005fc1;
         }
         .log {
-            background: #f8f9fa;
-            border-radius: 16px;
+            background: #fff;
+            border-radius: 12px;
             padding: 12px;
-            margin-top: 24px;
-            font-family: monospace;
+            margin-top: 20px;
             font-size: 12px;
+            font-family: monospace;
             text-align: left;
             max-height: 300px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-break: break-all;
+        }
+        /* 引导浮层样式 */
+        .guide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .guide-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            max-width: 280px;
+            margin: 20px;
             color: #333;
         }
-        .log-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #666;
+        .guide-card p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            white-space: pre-line;
+            line-height: 1.5;
         }
-        .note {
-            font-size: 12px;
-            color: #888;
-            margin-top: 16px;
+        .guide-card button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+            margin: 0 auto;
+            width: auto;
+        }
+        @media (prefers-color-scheme: dark) {
+            .guide-card { background: #1e1e1e; color: white; }
+            .guide-card p { color: #ddd; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>📱 跳转测试</h2>
-    <p style="margin-bottom: 16px; color: #666;">借鉴小红书方案：Universal Link 优先 → Scheme 降级</p>
-    <button id="btnDouyin">🎵 测试抖音跳转</button>
-    <button id="btnMeituan">🍔 测试美团跳转</button>
-    <div class="log">
-        <div class="log-title">📋 操作日志：</div>
-        <div id="logContent">等待操作...</div>
+    <h2>深度链接测试（品牌优化版）</h2>
+    <button id="douyinBtn">📱 打开抖音商家页</button>
+    <button id="meituanBtn">📱 打开美团商家页</button>
+    <div class="log" id="log">等待操作...</div>
+
+    <!-- 引导浮层 -->
+    <div id="guideOverlay" class="guide-overlay">
+        <div class="guide-card">
+            <p id="guideMessage">引导信息</p>
+            <button onclick="closeGuide()">我知道了</button>
+        </div>
     </div>
-    <div class="note">⚠️ 请在手机自带浏览器或 Chrome 中测试。若未安装App，会停留在网页版。</div>
-</div>
 
-<script>
-    const logDiv = document.getElementById('logContent');
-    function log(msg, isError = false) {
-        const line = document.createElement('div');
-        line.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
-        if (isError) line.style.color = 'red';
-        logDiv.appendChild(line);
-        logDiv.scrollTop = logDiv.scrollHeight;
-        console.log(msg);
-    }
+    <script>
+        // ---------- 配置区（请替换为真实的商家ID）----------
+        const DOUYIN_POI_ID = '75561483463443107990';
+        const MEITUAN_POI_ID = '1685933593';
+        // -------------------------------------------------
 
-    // 固定 POI ID（你可以替换成真实的）
-    const DOUYIN_POI_ID = '75561483463443107990';
-    const MEITUAN_POI_ID = '1685933593';
-
-    // Universal Link（优先级最高）
-    const douyinUniversal = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
-    const meituanUniversal = `https://i.meituan.com/poi/${MEITUAN_POI_ID}`;
-
-    // Scheme 降级
-    const douyinScheme = `snssdk1128://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
-    const meituanScheme = `imeituan://www.meituan.com/poi/${MEITUAN_POI_ID}`;
-
-    // 检测环境
-    const ua = navigator.userAgent;
-    const isIOS = /iPhone|iPad|iPod/.test(ua);
-    const isAndroid = /Android/.test(ua);
-    const isWeChat = /MicroMessenger/.test(ua);
-    const isQQ = /QQ\//.test(ua);
-    const isAlipay = /AlipayClient/.test(ua);
-
-    log(`设备: ${isIOS ? 'iOS' : (isAndroid ? 'Android' : '其他')}`);
-    log(`微信: ${isWeChat ? '是' : '否'}, QQ: ${isQQ ? '是' : '否'}, 支付宝: ${isAlipay ? '是' : '否'}`);
-
-    // 显示引导层（微信环境）
-    function showGuide() {
-        alert('请点击右上角菜单，选择“在浏览器中打开”');
-        // 也可以创建一个浮层，这里简单用 alert
-    }
-
-    // 核心跳转函数（模仿小红书方案）
-    function jumpWithUniversalFirst(universalLink, schemeUrl, appName) {
-        log(`开始尝试唤起 ${appName}`);
-        log(`优先尝试 Universal Link: ${universalLink}`);
-
-        let appLaunched = false;
-        let timer = null;
-
-        // 监听页面隐藏（App被唤起时浏览器会进入后台）
-        const onVisibility = () => {
-            if (document.hidden) {
-                appLaunched = true;
-                cleanUp();
-                log(`✅ ${appName} 已成功唤起`);
-            }
-        };
-        const onBlur = () => {
-            appLaunched = true;
-            cleanUp();
-            log(`✅ ${appName} 已成功唤起`);
-        };
-        document.addEventListener('visibilitychange', onVisibility);
-        window.addEventListener('blur', onBlur);
-
-        function cleanUp() {
-            document.removeEventListener('visibilitychange', onVisibility);
-            window.removeEventListener('blur', onBlur);
-            if (timer) clearTimeout(timer);
+        const logDiv = document.getElementById('log');
+        function log(msg) {
+            const p = document.createElement('div');
+            p.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
+            logDiv.appendChild(p);
+            console.log(msg);
         }
 
-        // 先尝试 Universal Link（直接修改 location）
-        window.location.href = universalLink;
+        // 增强的引导函数（支持品牌特定提示）
+        function showGuideMessage(msg, platform, fallbackUrl) {
+            const guideMsg = document.querySelector('#guideMessage');
+            let finalMsg = msg;
+            // 根据平台和设备品牌，添加更具体的提示
+            const ua = navigator.userAgent;
+            const brand = /Vivo|vivo/.test(ua) ? 'vivo' :
+                          /OPPO|oppo/.test(ua) ? 'OPPO' :
+                          /Mi|Redmi/.test(ua) ? '小米' :
+                          /SM-|Samsung/.test(ua) ? '三星' : '';
+            if (brand) {
+                finalMsg += `\n\n若无法跳转，请尝试：\n1. 在手机「设置」-「应用管理」中找到当前浏览器\n2. 开启「关联启动」或「打开其他应用」权限\n3. 返回本页面再次点击`;
+            }
+            if (guideMsg) guideMsg.innerText = finalMsg;
+            document.getElementById('guideOverlay').style.display = 'flex';
+        }
 
-        // 设置降级：如果 2.5 秒后没有检测到 App 唤起，则尝试 Scheme
-        timer = setTimeout(() => {
-            if (!appLaunched) {
-                log(`Universal Link 未唤起，尝试降级 Scheme: ${schemeUrl}`);
-                // 对于 Android，使用 iframe 方式尝试 Scheme（避免页面跳转）
-                if (isAndroid) {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = schemeUrl;
-                    document.body.appendChild(iframe);
-                    setTimeout(() => {
-                        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                    }, 1000);
-                } else {
-                    window.location.href = schemeUrl;
+        function closeGuide() {
+            document.getElementById('guideOverlay').style.display = 'none';
+        }
+
+        // 环境检测
+        const ua = navigator.userAgent;
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const isWeChat = /MicroMessenger/i.test(ua);
+        const isQQ = /QQ\//i.test(ua);
+        const isAlipay = /AlipayClient/i.test(ua);
+        log(`环境: ${isAndroid ? 'Android' : isIOS ? 'iOS' : '其他'}, 微信:${isWeChat}, QQ:${isQQ}, 支付宝:${isAlipay}`);
+
+        // 通用延时降级函数
+        function delayFallback(fn, timeout) {
+            let timer = setTimeout(() => {
+                log('降级执行: 跳转备用链接');
+                fn();
+            }, timeout);
+            const onVisibility = () => {
+                if (document.hidden) {
+                    clearTimeout(timer);
+                    document.removeEventListener('visibilitychange', onVisibility);
+                    window.removeEventListener('blur', onVisibility);
+                    log('✅ App已成功唤起，取消降级');
                 }
-                // 再给 2 秒时间，若仍未唤起则提示
-                setTimeout(() => {
-                    if (!appLaunched) {
-                        cleanUp();
-                        log(`❌ 未能唤起 ${appName}，请确保已安装App`, true);
-                        alert(`未能唤起${appName}，请确保已安装抖音/美团，或在浏览器中打开`);
-                    }
-                }, 2000);
+            };
+            document.addEventListener('visibilitychange', onVisibility);
+            window.addEventListener('blur', onVisibility);
+            return timer;
+        }
+
+        // 抖音跳转（Universal Link 优先 + 品牌策略）
+        function jumpToDouyin() {
+            const universalLink = `https://www.douyin.com/poi/${DOUYIN_POI_ID}`;
+            const scheme = `snssdk1128://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web`;
+            const intent = `intent://poi/detail?id=${DOUYIN_POI_ID}&from=webview&refer=web#Intent;scheme=snssdk1128;package=com.ss.android.ugc.aweme;S.browser_fallback_url=${encodeURIComponent(universalLink)};end;`;
+            const fallbackUrl = universalLink;
+
+            // 微信等内置浏览器直接引导
+            if (isWeChat || isQQ || isAlipay) {
+                showGuideMessage('请在右上角菜单选择“在浏览器中打开”', 'douyin', fallbackUrl);
+                return;
             }
-        }, 2500);
-    }
 
-    // 入口：处理环境判断
-    function onJump(platform) {
-        // 微信/QQ/支付宝 直接引导，不尝试跳转
-        if (isWeChat || isQQ || isAlipay) {
-            log(`检测到受限环境（${isWeChat ? '微信' : isQQ ? 'QQ' : '支付宝'}），显示引导`, true);
-            showGuide();
-            return;
+            if (isIOS) {
+                log('iOS: 使用 Universal Link');
+                window.location.href = universalLink;
+                delayFallback(() => {
+                    log('iOS 降级: 尝试 Scheme');
+                    window.location.href = scheme;
+                }, 800);
+                delayFallback(() => {
+                    log('最终降级: 打开网页');
+                    window.location.href = fallbackUrl;
+                }, 3000);
+            } else if (isAndroid) {
+                // 品牌识别（简化版，云函数中会更细致，这里仅做演示）
+                const brand = /Vivo|vivo/.test(ua) ? 'vivo' :
+                              /OPPO|oppo/.test(ua) ? 'oppo' :
+                              /Mi|Redmi/.test(ua) ? 'xiaomi' :
+                              /SM-|Samsung/.test(ua) ? 'samsung' : '';
+                log(`Android 品牌: ${brand || '通用'}`);
+
+                // 品牌优化策略
+                if (brand === 'vivo' || brand === 'oppo') {
+                    log('OPPO/vivo: 仅尝试 Universal Link');
+                    window.location.href = universalLink;
+                    delayFallback(() => {
+                        log('降级: 打开网页');
+                        window.location.href = fallbackUrl;
+                    }, 2000);
+                } else if (brand === 'xiaomi') {
+                    log('小米: 尝试 Universal Link → Intent → Scheme');
+                    window.location.href = universalLink;
+                    delayFallback(() => {
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = intent;
+                        document.body.appendChild(iframe);
+                        setTimeout(() => iframe.remove(), 1000);
+                    }, 800);
+                    delayFallback(() => {
+                        window.location.href = scheme;
+                    }, 1500);
+                    delayFallback(() => {
+                        window.location.href = fallbackUrl;
+                    }, 3000);
+                } else {
+                    // 默认策略
+                    window.location.href = universalLink;
+                    delayFallback(() => {
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = intent;
+                        document.body.appendChild(iframe);
+                        setTimeout(() => iframe.remove(), 1000);
+                    }, 800);
+                    delayFallback(() => {
+                        window.location.href = scheme;
+                    }, 1500);
+                    delayFallback(() => {
+                        window.location.href = fallbackUrl;
+                    }, 3000);
+                }
+            } else {
+                window.location.href = fallbackUrl;
+            }
         }
 
-        if (platform === 'douyin') {
-            jumpWithUniversalFirst(douyinUniversal, douyinScheme, '抖音');
-        } else if (platform === 'meituan') {
-            jumpWithUniversalFirst(meituanUniversal, meituanScheme, '美团');
-        }
-    }
+        // 美团跳转（同样加入品牌优化）
+        function jumpToMeituan() {
+            const universalLink = `https://i.meituan.com/poi/${MEITUAN_POI_ID}`;
+            const scheme = `imeituan://www.meituan.com/poi/${MEITUAN_POI_ID}`;
+            const intent = `intent://poi/${MEITUAN_POI_ID}#Intent;scheme=imeituan;package=com.sankuai.meituan;S.browser_fallback_url=${encodeURIComponent(universalLink)};end;`;
+            const fallbackUrl = universalLink;
 
-    document.getElementById('btnDouyin').onclick = () => {
-        log('===== 用户点击抖音测试 =====');
-        onJump('douyin');
-    };
-    document.getElementById('btnMeituan').onclick = () => {
-        log('===== 用户点击美团测试 =====');
-        onJump('meituan');
-    };
-</script>
+            if (isWeChat || isQQ || isAlipay) {
+                showGuideMessage('请在右上角菜单选择“在浏览器中打开”', 'meituan', fallbackUrl);
+                return;
+            }
+
+            if (isIOS) {
+                log('iOS: 使用 Universal Link');
+                window.location.href = universalLink;
+                delayFallback(() => {
+                    log('iOS 降级: Scheme');
+                    window.location.href = scheme;
+                }, 800);
+                delayFallback(() => {
+                    window.location.href = fallbackUrl;
+                }, 3000);
+            } else if (isAndroid) {
+                const brand = /Vivo|vivo/.test(ua) ? 'vivo' :
+                              /OPPO|oppo/.test(ua) ? 'oppo' :
+                              /Mi|Redmi/.test(ua) ? 'xiaomi' : '';
+                if (brand === 'vivo' || brand === 'oppo') {
+                    window.location.href = universalLink;
+                    delayFallback(() => window.location.href = fallbackUrl, 2000);
+                } else {
+                    window.location.href = universalLink;
+                    delayFallback(() => {
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = intent;
+                        document.body.appendChild(iframe);
+                        setTimeout(() => iframe.remove(), 1000);
+                    }, 800);
+                    delayFallback(() => {
+                        window.location.href = scheme;
+                    }, 1500);
+                    delayFallback(() => {
+                        window.location.href = fallbackUrl;
+                    }, 3000);
+                }
+            } else {
+                window.location.href = fallbackUrl;
+            }
+        }
+
+        // 按钮绑定
+        document.getElementById('douyinBtn').onclick = () => {
+            log('用户点击抖音按钮');
+            jumpToDouyin();
+        };
+        document.getElementById('meituanBtn').onclick = () => {
+            log('用户点击美团按钮');
+            jumpToMeituan();
+        };
+    </script>
 </body>
 </html>
