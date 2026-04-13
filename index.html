@@ -98,6 +98,7 @@
             justify-content: center;
             gap: 12px;
             margin: 12px 0;
+            cursor: pointer;
         }
         .wechat-icon {
             font-size: 1.2rem;
@@ -121,6 +122,7 @@
             background: white;
             padding: 6px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
         }
         .poster-img {
             width: 100%;
@@ -398,10 +400,10 @@
     </div>
 
     <div class="glass-container">
-        <!-- 店长信息区域（动态加载） -->
+        <!-- 店长信息区域 -->
         <div id="shopHeader" class="shop-header">
             <div class="shop-name">加载中...</div>
-            <div class="wechat-area">
+            <div class="wechat-area" id="wechatArea">
                 <i class="fab fa-weixin wechat-icon"></i>
                 <span class="wechat-number" id="wechatNumber">加载中...</span>
             </div>
@@ -475,6 +477,7 @@
             const qrcodeArea = document.getElementById('qrcodeArea');
             const posterArea = document.getElementById('posterArea');
             const shopNameDiv = document.querySelector('.shop-name');
+            const wechatArea = document.getElementById('wechatArea');
 
             // ================= 辅助函数 =================
             function showToast(msg, duration = 3000) {
@@ -491,7 +494,31 @@
                 guideOverlay.addEventListener('click', (e) => { if (e.target === guideOverlay) hideGuide(); });
             }
 
-            // 复制函数（兼容小米）
+            // 复制并尝试唤起微信
+            async function copyWechatAndOpenWechat(wechat) {
+                if (!wechat || wechat === '暂无') {
+                    showToast('店长微信号未配置', 2000);
+                    return;
+                }
+                // 复制微信号
+                try {
+                    await navigator.clipboard.writeText(wechat);
+                    console.log('微信号已复制');
+                } catch (err) {
+                    console.warn('复制失败', err);
+                }
+                // 尝试唤起微信
+                const wechatScheme = 'weixin://';
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = wechatScheme;
+                document.body.appendChild(iframe);
+                setTimeout(() => iframe.remove(), 500);
+                // 提示用户
+                showToast(`已复制微信号 ${wechat}，正在打开微信，请粘贴搜索添加`, 5000);
+            }
+
+            // 复制函数（用于好评）
             function copyTextToClipboard(text, callback) {
                 if (isMiBrowser) {
                     const guideDiv = document.createElement('div');
@@ -561,7 +588,7 @@
                 }
             }
 
-            // ================= 加载店长信息（通过云函数 getMerchantInfo） =================
+            // ================= 加载店长信息 =================
             async function loadShopInfo() {
                 if (!isCloudReady) return;
                 try {
@@ -572,9 +599,11 @@
                     if (res.result && res.result.code === 0) {
                         const merchant = res.result.data;
                         shopNameDiv.innerText = merchant.shopName || '臻选商家';
-                        wechatNumberSpan.innerText = merchant.wechat || '暂无';
+                        const wechat = merchant.wechat || '';
+                        wechatNumberSpan.innerText = wechat || '暂无';
                         if (merchant.qrcode) {
-                            qrcodeArea.innerHTML = `<img class="qrcode-img" src="${merchant.qrcode}" alt="店长微信二维码">`;
+                            qrcodeArea.innerHTML = `<img class="qrcode-img" src="${merchant.qrcode}" alt="店长微信二维码" id="qrcodeImg">`;
+                            document.getElementById('qrcodeImg')?.addEventListener('click', () => copyWechatAndOpenWechat(wechat));
                         } else {
                             qrcodeArea.innerHTML = '';
                         }
@@ -718,6 +747,17 @@
                     renderReviews(currentReviews);
                 } else {
                     reviewsContainer.innerHTML = '<div class="error-message">初始化失败，请检查网络或安全域名</div>';
+                }
+                // 绑定微信号区域点击事件
+                if (wechatArea) {
+                    wechatArea.addEventListener('click', () => {
+                        const wechat = wechatNumberSpan.innerText;
+                        if (wechat && wechat !== '暂无' && wechat !== '未配置店长信息' && wechat !== '加载失败') {
+                            copyWechatAndOpenWechat(wechat);
+                        } else {
+                            showToast('店长微信号未配置', 2000);
+                        }
+                    });
                 }
             }
 
