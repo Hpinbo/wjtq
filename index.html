@@ -3,324 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>臻评 </title>
+    <title>臻评 · 商家好评</title>
     <link rel="preconnect" href="https://static.cloudbase.net">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-        }
-
-        :root {
-            --bg-color: #f5f7fa;
-            --card-bg: rgba(255, 255, 255, 0.6);
-            --text-primary: #1e2a3a;
-            --text-secondary: #2c3e50;
-            --border-light: rgba(255, 255, 255, 0.3);
-            --shadow-color: rgba(0, 0, 0, 0.08);
-            --btn-bg: rgba(255, 255, 255, 0.7);
-            --btn-hover: rgba(255, 255, 255, 0.9);
-            --warning-bg: rgba(255, 230, 200, 0.7);
-            --guide-bg: rgba(255, 255, 255, 0.7);
-            --guide-border: rgba(0, 0, 0, 0.2);
-            --guide-btn-bg: #2c3e50;
-            --guide-btn-text: #ffffff;
-            --error-bg: rgba(255, 100, 100, 0.2);
-            --manual-copy-bg: rgba(0, 0, 0, 0.8);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #121212;
-                --card-bg: rgba(40, 40, 40, 0.7);
-                --text-primary: #f0f0f0;
-                --text-secondary: #cccccc;
-                --border-light: rgba(255, 255, 255, 0.1);
-                --shadow-color: rgba(0, 0, 0, 0.5);
-                --btn-bg: rgba(60, 60, 60, 0.7);
-                --btn-hover: rgba(80, 80, 80, 0.9);
-                --warning-bg: rgba(80, 60, 30, 0.7);
-                --guide-bg: rgba(40, 40, 40, 0.8);
-                --guide-border: rgba(255, 255, 255, 0.2);
-                --guide-btn-bg: #cccccc;
-                --guide-btn-text: #121212;
-                --error-bg: rgba(180, 60, 60, 0.4);
-                --manual-copy-bg: rgba(30, 30, 30, 0.95);
-            }
-        }
-
-        body {
-            background-color: var(--bg-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 16px;
-        }
-
-        .glass-container {
-            width: 100%;
-            max-width: 500px;
-            background: var(--card-bg);
-            backdrop-filter: blur(18px);
-            border-radius: 48px 48px 32px 32px;
-            padding: 24px 20px 20px;
-            box-shadow: 0 20px 40px var(--shadow-color), 0 0 0 1px var(--border-light) inset;
-            border: 1px solid var(--border-light);
-        }
-
-        .shop-header {
-            background: var(--btn-bg);
-            backdrop-filter: blur(8px);
-            border-radius: 32px;
-            padding: 20px;
-            margin-bottom: 24px;
-            text-align: center;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 8px 20px var(--shadow-color);
-        }
-        .shop-name {
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-        .wechat-area {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin: 12px 0;
-            cursor: pointer;
-        }
-        .wechat-icon {
-            font-size: 1.2rem;
-            color: #07c160;
-        }
-        .wechat-number {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            background: var(--card-bg);
-            padding: 6px 16px;
-            border-radius: 40px;
-            backdrop-filter: blur(4px);
-            display: inline-block;
-        }
-        .qr-wrapper {
-            margin-top: 12px;
-            cursor: pointer;
-            display: inline-block;
-        }
-        .qrcode-img {
-            width: 100px;
-            height: 100px;
-            border-radius: 20px;
-            background: white;
-            padding: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            object-fit: contain;
-        }
-        .qr-fallback {
-            width: 100px;
-            height: 100px;
-            border-radius: 20px;
-            background: #f0f2f5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #999;
-            text-align: center;
-            padding: 8px;
-        }
-        .poster-img {
-            width: 100%;
-            border-radius: 20px;
-            margin-top: 16px;
-            box-shadow: 0 8px 20px var(--shadow-color);
-        }
-
-        .reviews-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 24px;
-            min-height: 280px;
-        }
-        .review-card {
-            background: var(--btn-bg);
-            backdrop-filter: blur(8px);
-            border-radius: 28px;
-            padding: 16px 18px 16px 22px;
-            border: 1px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 8px 16px var(--shadow-color);
-            transition: transform 0.2s;
-            animation: cardPop 0.3s ease;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+        :root { --bg-color: #f5f7fa; --card-bg: rgba(255, 255, 255, 0.6); --text-primary: #1e2a3a; --text-secondary: #2c3e50; --border-light: rgba(255, 255, 255, 0.3); --shadow-color: rgba(0, 0, 0, 0.08); --btn-bg: rgba(255, 255, 255, 0.7); --btn-hover: rgba(255, 255, 255, 0.9); --warning-bg: rgba(255, 230, 200, 0.7); --guide-bg: rgba(255, 255, 255, 0.7); --guide-border: rgba(0, 0, 0, 0.2); --guide-btn-bg: #2c3e50; --guide-btn-text: #ffffff; --error-bg: rgba(255, 100, 100, 0.2); --manual-copy-bg: rgba(0, 0, 0, 0.8); }
+        @media (prefers-color-scheme: dark) { :root { --bg-color: #121212; --card-bg: rgba(40, 40, 40, 0.7); --text-primary: #f0f0f0; --text-secondary: #cccccc; --border-light: rgba(255, 255, 255, 0.1); --shadow-color: rgba(0, 0, 0, 0.5); --btn-bg: rgba(60, 60, 60, 0.7); --btn-hover: rgba(80, 80, 80, 0.9); --warning-bg: rgba(80, 60, 30, 0.7); --guide-bg: rgba(40, 40, 40, 0.8); --guide-border: rgba(255, 255, 255, 0.2); --guide-btn-bg: #cccccc; --guide-btn-text: #121212; --error-bg: rgba(180, 60, 60, 0.4); --manual-copy-bg: rgba(30, 30, 30, 0.95); } }
+        body { background-color: var(--bg-color); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; }
+        .glass-container { width: 100%; max-width: 500px; background: var(--card-bg); backdrop-filter: blur(18px); border-radius: 48px 48px 32px 32px; padding: 24px 20px 20px; box-shadow: 0 20px 40px var(--shadow-color), 0 0 0 1px var(--border-light) inset; border: 1px solid var(--border-light); }
+        .shop-header { background: var(--btn-bg); backdrop-filter: blur(8px); border-radius: 32px; padding: 20px; margin-bottom: 24px; text-align: center; border: 1px solid var(--border-light); box-shadow: 0 8px 20px var(--shadow-color); }
+        .shop-name { font-size: 1.6rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+        .wechat-area { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 12px 0; cursor: pointer; }
+        .wechat-icon { font-size: 1.2rem; color: #07c160; }
+        .wechat-number { font-size: 1.1rem; font-weight: 500; color: var(--text-primary); background: var(--card-bg); padding: 6px 16px; border-radius: 40px; backdrop-filter: blur(4px); display: inline-block; }
+        .qr-wrapper { margin-top: 12px; cursor: pointer; display: inline-block; }
+        .qrcode-img { width: 100px; height: 100px; border-radius: 20px; background: white; padding: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); object-fit: contain; }
+        .qr-fallback { width: 100px; height: 100px; border-radius: 20px; background: #f0f2f5; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; text-align: center; padding: 8px; }
+        .poster-img { width: 100%; border-radius: 20px; margin-top: 16px; box-shadow: 0 8px 20px var(--shadow-color); }
+        .reviews-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; min-height: 280px; }
+        .review-card { background: var(--btn-bg); backdrop-filter: blur(8px); border-radius: 28px; padding: 16px 18px 16px 22px; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 16px var(--shadow-color); transition: transform 0.2s; animation: cardPop 0.3s ease; }
         .review-card:active { transform: scale(0.98); }
-        @keyframes cardPop {
-            0% { opacity:0; transform:translateY(15px) scale(0.95); }
-            100% { opacity:1; transform:translateY(0) scale(1); }
-        }
-        .review-text {
-            font-size:1.05rem;
-            line-height:1.4;
-            color:var(--text-primary);
-            font-weight:480;
-            word-break:break-word;
-            flex:1;
-            padding-right:12px;
-        }
-        .copy-btn {
-            background:var(--btn-bg);
-            border:1px solid var(--border-light);
-            border-radius:40px;
-            padding:10px 18px;
-            font-size:0.9rem;
-            font-weight:550;
-            color:var(--text-secondary);
-            backdrop-filter:blur(4px);
-            cursor:pointer;
-            transition:all 0.15s;
-            box-shadow:0 4px 8px var(--shadow-color);
-            display:flex;
-            align-items:center;
-            gap:6px;
-            white-space:nowrap;
-            flex-shrink:0;
-        }
-        .copy-btn:active {
-            transform:scale(0.92);
-            background:var(--btn-hover);
-        }
-        .copy-btn::after {
-            content:"📋";
-            font-size:1.1rem;
-            opacity:0.9;
-        }
-        .browser-tip {
-            background:var(--warning-bg);
-            backdrop-filter:blur(5px);
-            border-radius:30px;
-            padding:10px 16px;
-            margin:10px 0 16px;
-            font-size:0.85rem;
-            text-align:center;
-            color:var(--text-primary);
-            border:1px solid var(--border-light);
-        }
-        .contact-footer {
-            margin-top:16px;
-            text-align:center;
-            padding:18px 10px 10px;
-            border-top:1px solid var(--border-light);
-            color:var(--text-secondary);
-            font-size:0.9rem;
-            backdrop-filter:blur(4px);
-        }
-        .contact-email {
-            background:var(--btn-bg);
-            display:inline-block;
-            padding:8px 28px;
-            border-radius:50px;
-            border:1px solid var(--border-light);
-            margin-top:8px;
-            font-size:0.85rem;
-            color:var(--text-primary);
-            text-decoration:none;
-        }
-
-        .modal-overlay {
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
-            background:rgba(0,0,0,0.3);
-            backdrop-filter:blur(5px);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            z-index:1000;
-            transition:opacity 0.2s;
-            opacity:0;
-            pointer-events:none;
-        }
+        @keyframes cardPop { 0% { opacity:0; transform:translateY(15px) scale(0.95); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+        .review-text { font-size:1.05rem; line-height:1.4; color:var(--text-primary); font-weight:480; word-break:break-word; flex:1; padding-right:12px; }
+        .copy-btn { background:var(--btn-bg); border:1px solid var(--border-light); border-radius:40px; padding:10px 18px; font-size:0.9rem; font-weight:550; color:var(--text-secondary); backdrop-filter:blur(4px); cursor:pointer; transition:all 0.15s; box-shadow:0 4px 8px var(--shadow-color); display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0; }
+        .copy-btn:active { transform:scale(0.92); background:var(--btn-hover); }
+        .copy-btn::after { content:"📋"; font-size:1.1rem; opacity:0.9; }
+        .browser-tip { background:var(--warning-bg); backdrop-filter:blur(5px); border-radius:30px; padding:10px 16px; margin:10px 0 16px; font-size:0.85rem; text-align:center; color:var(--text-primary); border:1px solid var(--border-light); }
+        .contact-footer { margin-top:16px; text-align:center; padding:18px 10px 10px; border-top:1px solid var(--border-light); color:var(--text-secondary); font-size:0.9rem; backdrop-filter:blur(4px); }
+        .contact-email { background:var(--btn-bg); display:inline-block; padding:8px 28px; border-radius:50px; border:1px solid var(--border-light); margin-top:8px; font-size:0.85rem; color:var(--text-primary); text-decoration:none; }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; z-index:1000; transition:opacity 0.2s; opacity:0; pointer-events:none; }
         .modal-overlay.show { opacity:1; pointer-events:auto; }
-        .modal-glass {
-            background:var(--card-bg);
-            backdrop-filter:blur(30px);
-            border-radius:48px;
-            padding:32px 24px;
-            width:300px;
-            border:1px solid var(--border-light);
-            transform:scale(0.9);
-            transition:transform 0.2s;
-            text-align:center;
-        }
+        .modal-glass { background:var(--card-bg); backdrop-filter:blur(30px); border-radius:48px; padding:32px 24px; width:300px; border:1px solid var(--border-light); transform:scale(0.9); transition:transform 0.2s; text-align:center; }
         .modal-overlay.show .modal-glass { transform:scale(1); }
         .modal-title { color:var(--text-primary); font-size:1.4rem; margin-bottom:20px; }
         .app-options { display:flex; flex-direction:column; gap:16px; margin-bottom:16px; }
-        .app-btn {
-            background:var(--btn-bg);
-            border:1px solid var(--border-light);
-            border-radius:60px;
-            padding:16px;
-            font-size:1.25rem;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:12px;
-            color:var(--text-primary);
-            cursor:pointer;
-        }
+        .app-btn { background:var(--btn-bg); border:1px solid var(--border-light); border-radius:60px; padding:16px; font-size:1.25rem; display:flex; align-items:center; justify-content:center; gap:12px; color:var(--text-primary); cursor:pointer; }
         .app-btn:active { transform:scale(0.96); }
-        .cancel-btn {
-            background:transparent;
-            border:1px solid var(--border-light);
-            border-radius:40px;
-            padding:12px;
-            margin-top:8px;
-            color:var(--text-secondary);
-            cursor:pointer;
-        }
-        .wechat-guide-overlay {
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
-            background:rgba(0,0,0,0.5);
-            backdrop-filter:blur(8px);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            z-index:3000;
-            opacity:0;
-            pointer-events:none;
-        }
+        .cancel-btn { background:transparent; border:1px solid var(--border-light); border-radius:40px; padding:12px; margin-top:8px; color:var(--text-secondary); cursor:pointer; }
+        .wechat-guide-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:3000; opacity:0; pointer-events:none; }
         .wechat-guide-overlay.show { opacity:1; pointer-events:auto; }
-        .wechat-guide-card {
-            background:var(--guide-bg);
-            backdrop-filter:blur(40px);
-            border-radius:48px;
-            padding:36px 28px;
-            max-width:380px;
-            width:85%;
-            border:1px solid var(--guide-border);
-            text-align:center;
-            color:var(--text-primary);
-        }
+        .wechat-guide-card { background:var(--guide-bg); backdrop-filter:blur(40px); border-radius:48px; padding:36px 28px; max-width:380px; width:85%; border:1px solid var(--guide-border); text-align:center; color:var(--text-primary); }
         .guide-icon { font-size:80px; animation:arrowBounce 1.2s infinite alternate; }
         @keyframes arrowBounce { from { transform:translateY(0) rotate(25deg); } to { transform:translateY(-15px) rotate(25deg); } }
         .guide-dots { font-size:60px; letter-spacing:12px; margin:0 0 15px; }
@@ -328,60 +53,13 @@
         .guide-text { font-size:1.4rem; background:var(--btn-bg); padding:14px 0; border-radius:60px; margin:20px 0 12px; }
         .guide-sub { font-size:1.1rem; margin-bottom:28px; }
         .guide-btn { background:var(--guide-btn-bg); border:none; border-radius:60px; padding:16px 30px; color:var(--guide-btn-text); width:100%; cursor:pointer; }
-        .toast-message {
-            position:fixed;
-            bottom:30px;
-            left:50%;
-            transform:translateX(-50%);
-            background:rgba(0,0,0,0.9);
-            color:white;
-            padding:12px 24px;
-            border-radius:50px;
-            font-size:0.9rem;
-            z-index:2000;
-            backdrop-filter:blur(10px);
-            display:none;
-            white-space:nowrap;
-        }
+        .toast-message { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:white; padding:12px 24px; border-radius:50px; font-size:0.9rem; z-index:2000; backdrop-filter:blur(10px); display:none; white-space:nowrap; }
         .empty-message { text-align:center; padding:30px 0; color:var(--text-secondary); font-style:italic; }
         .error-message { text-align:center; padding:20px; color:#ff6b6b; background:var(--error-bg); border-radius:24px; }
-        .manual-copy-overlay {
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
-            background:rgba(0,0,0,0.5);
-            backdrop-filter:blur(5px);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            z-index:4000;
-            opacity:0;
-            pointer-events:none;
-        }
+        .manual-copy-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; z-index:4000; opacity:0; pointer-events:none; }
         .manual-copy-overlay.show { opacity:1; pointer-events:auto; }
-        .manual-copy-card {
-            background:var(--card-bg);
-            backdrop-filter:blur(30px);
-            border-radius:32px;
-            padding:24px;
-            max-width:340px;
-            width:85%;
-            border:1px solid var(--border-light);
-            text-align:center;
-        }
-        .manual-copy-text {
-            background:var(--btn-bg);
-            border:1px solid var(--border-light);
-            border-radius:20px;
-            padding:16px;
-            margin:16px 0;
-            color:var(--text-primary);
-            word-break:break-word;
-            text-align:left;
-            user-select:text;
-        }
+        .manual-copy-card { background:var(--card-bg); backdrop-filter:blur(30px); border-radius:32px; padding:24px; max-width:340px; width:85%; border:1px solid var(--border-light); text-align:center; }
+        .manual-copy-text { background:var(--btn-bg); border:1px solid var(--border-light); border-radius:20px; padding:16px; margin:16px 0; color:var(--text-primary); word-break:break-word; text-align:left; user-select:text; }
         .manual-copy-btn { background:var(--guide-btn-bg); border:none; border-radius:40px; padding:12px 24px; color:var(--guide-btn-text); cursor:pointer; }
         .loading-skeleton { display:flex; flex-direction:column; gap:16px; }
         .skeleton-card { background:var(--btn-bg); border-radius:28px; height:80px; animation:pulse 1.5s infinite; }
@@ -391,7 +69,6 @@
 <body>
     <div class="toast-message" id="toastMessage"></div>
 
-    <!-- 微信引导弹窗 -->
     <div class="wechat-guide-overlay" id="wechatGuideOverlay">
         <div class="wechat-guide-card">
             <div class="guide-icon">↗️</div>
@@ -403,7 +80,6 @@
         </div>
     </div>
 
-    <!-- 手动复制弹窗 -->
     <div class="manual-copy-overlay" id="manualCopyOverlay">
         <div class="manual-copy-card">
             <div style="font-size:1.3rem; font-weight:600;">📋 复制失败</div>
@@ -414,7 +90,6 @@
     </div>
 
     <div class="glass-container">
-        <!-- 店长信息区域 -->
         <div id="shopHeader" class="shop-header">
             <div class="shop-name">加载中...</div>
             <div class="wechat-area" id="wechatArea">
@@ -425,7 +100,6 @@
             <div id="posterArea"></div>
         </div>
 
-        <!-- 好评列表 -->
         <div id="reviewsContainer" class="reviews-list">
             <div class="loading-skeleton" id="loadingSkeleton">
                 <div class="skeleton-card"></div>
@@ -441,7 +115,6 @@
         </div>
     </div>
 
-    <!-- 平台选择模态框 -->
     <div class="modal-overlay" id="appChoiceModal">
         <div class="modal-glass">
             <div class="modal-title">选择平台</div>
@@ -511,9 +184,7 @@
                 }
                 try {
                     await navigator.clipboard.writeText(wechat);
-                } catch (err) {
-                    console.warn('复制失败', err);
-                }
+                } catch (err) { console.warn(err); }
                 const wechatScheme = 'weixin://';
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
@@ -593,6 +264,21 @@
                 }
             }
 
+            // 通过云函数删除好评
+            async function deleteReviewById(id) {
+                if (!isCloudReady) return false;
+                try {
+                    const res = await cloudApp.callFunction({
+                        name: 'deleteReview',
+                        data: { reviewId: id }
+                    });
+                    return res.result.code === 0;
+                } catch (err) {
+                    console.error('删除失败', err);
+                    return false;
+                }
+            }
+
             async function loadShopInfo() {
                 if (!isCloudReady) return;
                 try {
@@ -605,14 +291,12 @@
                         shopNameDiv.innerText = merchant.shopName || '臻选商家';
                         const wechat = merchant.wechat || '';
                         wechatNumberSpan.innerText = wechat || '暂无';
-                        // 二维码区域
                         if (merchant.qrcode) {
-                            const qrUrl = merchant.qrcode;
                             const wrapper = document.createElement('div');
                             wrapper.className = 'qr-wrapper';
                             const img = document.createElement('img');
                             img.className = 'qrcode-img';
-                            img.src = qrUrl;
+                            img.src = merchant.qrcode;
                             img.alt = '店长微信二维码';
                             img.onerror = () => {
                                 img.style.display = 'none';
@@ -623,9 +307,7 @@
                                 wrapper.appendChild(fallback);
                                 wrapper.onclick = () => copyWechatAndOpenWechat(wechat);
                             };
-                            img.onload = () => {
-                                wrapper.onclick = () => copyWechatAndOpenWechat(wechat);
-                            };
+                            img.onload = () => { wrapper.onclick = () => copyWechatAndOpenWechat(wechat); };
                             wrapper.appendChild(img);
                             qrcodeArea.innerHTML = '';
                             qrcodeArea.appendChild(wrapper);
@@ -638,7 +320,6 @@
                             posterArea.innerHTML = '';
                         }
                     } else {
-                        console.warn('获取店长信息失败', res.result);
                         wechatNumberSpan.innerText = '未配置店长信息';
                     }
                 } catch (err) {
@@ -659,18 +340,6 @@
                 } catch (err) {
                     console.error('加载好评失败', err);
                     return [];
-                }
-            }
-
-            async function deleteReview(id) {
-                if (!isCloudReady) return false;
-                try {
-                    const db = cloudApp.database();
-                    await db.collection(REVIEWS_COLLECTION).doc(id).remove();
-                    return true;
-                } catch (err) {
-                    console.error('删除失败', err);
-                    return false;
                 }
             }
 
@@ -791,15 +460,22 @@
                     modalOverlay.classList.add('show');
                 }
             });
+
             chooseDouyin.addEventListener('click', async () => {
                 if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
                 const review = currentReviews.find(r => r.id === selectedReviewId);
                 if (review) {
                     copyTextToClipboard(review.text, async (success) => {
-                        await deleteReview(selectedReviewId);
-                        const newReviews = await loadReviews();
-                        currentReviews = newReviews;
-                        renderReviews(currentReviews);
+                        const deleted = await deleteReviewById(selectedReviewId);
+                        if (deleted) {
+                            // 刷新列表
+                            const newReviews = await loadReviews();
+                            currentReviews = newReviews;
+                            renderReviews(currentReviews);
+                            showToast('✅ 复制成功，好评已使用', 2000);
+                        } else {
+                            showToast('⚠️ 复制成功，但删除失败，请稍后重试', 3000);
+                        }
                         modalOverlay.classList.remove('show');
                         jumpToApp('douyin');
                     });
@@ -807,15 +483,21 @@
                     modalOverlay.classList.remove('show');
                 }
             });
+
             chooseMeituan.addEventListener('click', async () => {
                 if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
                 const review = currentReviews.find(r => r.id === selectedReviewId);
                 if (review) {
                     copyTextToClipboard(review.text, async (success) => {
-                        await deleteReview(selectedReviewId);
-                        const newReviews = await loadReviews();
-                        currentReviews = newReviews;
-                        renderReviews(currentReviews);
+                        const deleted = await deleteReviewById(selectedReviewId);
+                        if (deleted) {
+                            const newReviews = await loadReviews();
+                            currentReviews = newReviews;
+                            renderReviews(currentReviews);
+                            showToast('✅ 复制成功，好评已使用', 2000);
+                        } else {
+                            showToast('⚠️ 复制成功，但删除失败，请稍后重试', 3000);
+                        }
                         modalOverlay.classList.remove('show');
                         jumpToApp('meituan');
                     });
@@ -823,6 +505,7 @@
                     modalOverlay.classList.remove('show');
                 }
             });
+
             closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('show'));
             modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('show'); });
 
