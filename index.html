@@ -223,7 +223,7 @@
             text-decoration:none;
         }
 
-        /* 模态框和引导层样式 (沿用原设计) */
+        /* 模态框和引导层样式 */
         .modal-overlay {
             position:fixed;
             top:0;
@@ -398,9 +398,9 @@
     </div>
 
     <div class="glass-container">
-        <!-- 店长信息区域 -->
+        <!-- 店长信息区域（动态加载） -->
         <div id="shopHeader" class="shop-header">
-            <div class="shop-name">臻选商家</div>
+            <div class="shop-name">加载中...</div>
             <div class="wechat-area">
                 <i class="fab fa-weixin wechat-icon"></i>
                 <span class="wechat-number" id="wechatNumber">加载中...</span>
@@ -439,14 +439,12 @@
 
     <script>
         (function() {
-            // 配置
-            const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5';        // 请替换为您的环境ID
-            const COLLECTION_NAME = 'reviews';                 // 好评集合名称
+            // ================= 配置 =================
+            const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5';        // 您的云开发环境ID
+            const REVIEWS_COLLECTION = 'reviews';              // 好评集合名称
             const urlParams = new URLSearchParams(window.location.search);
-            const shopId = urlParams.get('shopId') || 'billiard_001';  // 商家标识，用于定制店长信息
-            console.log(`当前商家: ${shopId}`);
+            const shopId = urlParams.get('shopId') || 'billiard_001';  // 商家标识
 
-            let db = null;
             let cloudApp = null;
             let isCloudReady = false;
             let currentReviews = [];
@@ -476,8 +474,9 @@
             const wechatNumberSpan = document.getElementById('wechatNumber');
             const qrcodeArea = document.getElementById('qrcodeArea');
             const posterArea = document.getElementById('posterArea');
+            const shopNameDiv = document.querySelector('.shop-name');
 
-            // 辅助函数
+            // ================= 辅助函数 =================
             function showToast(msg, duration = 3000) {
                 toastMessage.style.display = 'block';
                 toastMessage.textContent = msg;
@@ -549,12 +548,11 @@
             manualCopyCloseBtn.addEventListener('click', () => manualCopyOverlay.classList.remove('show'));
             manualCopyOverlay.addEventListener('click', (e) => { if(e.target === manualCopyOverlay) manualCopyOverlay.classList.remove('show'); });
 
-            // 云开发初始化
+            // ================= 云开发初始化 =================
             async function initCloud() {
                 try {
                     cloudApp = cloudbase.init({ env: CLOUD_ENV });
                     await cloudApp.auth().signInAnonymously();
-                    db = cloudApp.database();
                     isCloudReady = true;
                     console.log('云开发初始化成功');
                 } catch (err) {
@@ -563,14 +561,17 @@
                 }
             }
 
-            // 加载店长信息（根据 shopId 从 merchants 或单独接口获取）
+            // ================= 加载店长信息（通过云函数 getMerchantInfo） =================
             async function loadShopInfo() {
                 if (!isCloudReady) return;
                 try {
-                    // 尝试从 merchants 集合获取商家信息
-                    const res = await db.collection('merchants').where({ shopId: shopId }).get();
-                    if (res.data && res.data.length > 0) {
-                        const merchant = res.data[0];
+                    const res = await cloudApp.callFunction({
+                        name: 'getMerchantInfo',
+                        data: { shopId: shopId }
+                    });
+                    if (res.result && res.result.code === 0) {
+                        const merchant = res.result.data;
+                        shopNameDiv.innerText = merchant.shopName || '臻选商家';
                         wechatNumberSpan.innerText = merchant.wechat || '暂无';
                         if (merchant.qrcode) {
                             qrcodeArea.innerHTML = `<img class="qrcode-img" src="${merchant.qrcode}" alt="店长微信二维码">`;
@@ -582,21 +583,25 @@
                         } else {
                             posterArea.innerHTML = '';
                         }
-                        document.querySelector('.shop-name').innerText = merchant.shopName || '臻选商家';
                     } else {
-                        wechatNumberSpan.innerText = '暂无店长微信';
+                        console.warn('获取店长信息失败', res.result);
+                        wechatNumberSpan.innerText = '未配置店长信息';
                     }
                 } catch (err) {
-                    console.warn('加载店长信息失败', err);
-                    wechatNumberSpan.innerText = '请稍后重试';
+                    console.error('调用 getMerchantInfo 失败', err);
+                    wechatNumberSpan.innerText = '加载失败';
                 }
             }
 
-            // 加载好评列表
+            // ================= 加载好评列表 =================
             async function loadReviews() {
                 if (!isCloudReady) return [];
                 try {
-                    const res = await db.collection(COLLECTION_NAME).where({ shopId: shopId }).orderBy('createTime', 'desc').get();
+                    const db = cloudApp.database();
+                    const res = await db.collection(REVIEWS_COLLECTION)
+                        .where({ shopId: shopId })
+                        .orderBy('createTime', 'desc')
+                        .get();
                     return res.data.map(doc => ({ id: doc._id, text: doc.text }));
                 } catch (err) {
                     console.error('加载好评失败', err);
@@ -607,7 +612,8 @@
             async function deleteReview(id) {
                 if (!isCloudReady) return false;
                 try {
-                    await db.collection(COLLECTION_NAME).doc(id).remove();
+                    const db = cloudApp.database();
+                    await db.collection(REVIEWS_COLLECTION).doc(id).remove();
                     return true;
                 } catch (err) {
                     console.error('删除失败', err);
@@ -634,14 +640,13 @@
                     html += `<div class="review-card"><span class="review-text">${escapeHtml(item.text)}</span><button class="copy-btn" data-id="${item.id}">复制</button></div>`;
                 });
                 reviewsContainer.innerHTML = html;
-                // 绑定复制按钮事件（事件委托已在容器上处理）
             }
 
             function escapeHtml(str) {
                 return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
             }
 
-            // 跳转引擎
+            // ================= 跳转引擎 =================
             function jumpToApp(platform) {
                 const config = {
                     douyin: {
@@ -703,7 +708,7 @@
                 }, 2500);
             }
 
-            // 主流程
+            // ================= 主流程 =================
             async function init() {
                 await initCloud();
                 if (isCloudReady) {
@@ -716,7 +721,7 @@
                 }
             }
 
-            // 事件绑定
+            // ================= 事件绑定 =================
             reviewsContainer.addEventListener('click', (e) => {
                 const btn = e.target.closest('.copy-btn');
                 if (!btn) return;
