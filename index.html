@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>臻评 · 商家好评 & 一键连Wi-Fi</title>
-    <!-- 图标库：Font Awesome 6 -->
+    <title>臻评</title>
+    <!-- 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- 二维码生成库（用于 Wi-Fi 分享） -->
+    <!-- 二维码生成库 -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <!-- 腾讯云开发 SDK -->
     <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
@@ -81,7 +81,6 @@
             border: 1px solid var(--border-light);
         }
 
-        /* 商家头部 */
         .shop-header {
             background: var(--btn-bg);
             backdrop-filter: blur(8px);
@@ -100,7 +99,6 @@
             margin-bottom: 6px;
         }
 
-        /* 微信联系区 */
         .wechat-area {
             display: flex;
             align-items: center;
@@ -130,11 +128,10 @@
         .copy-wechat-hint {
             font-size: 0.8rem;
             color: var(--text-secondary);
-            margin-top: 6px;
+            margin-top: 4px;
             opacity: 0.7;
         }
 
-        /* Wi-Fi 卡片 */
         .wifi-section {
             background: var(--wifi-bg);
             backdrop-filter: blur(8px);
@@ -215,7 +212,6 @@
             background: var(--btn-hover);
         }
 
-        /* 可用好评数量 */
         .review-count-bar {
             display: flex;
             align-items: center;
@@ -236,13 +232,12 @@
             font-weight: 600;
         }
 
-        /* 好评列表 */
         .reviews-list {
             display: flex;
             flex-direction: column;
             gap: 14px;
             margin-bottom: 22px;
-            min-height: 220px;
+            min-height: 100px;
         }
 
         .review-card {
@@ -259,14 +254,8 @@
         }
 
         @keyframes cardPop {
-            from {
-                opacity: 0;
-                transform: translateY(12px) scale(0.96);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .review-text {
@@ -318,38 +307,14 @@
             border: 1px solid var(--border-light);
         }
 
-        .contact-footer {
-            margin-top: 18px;
-            text-align: center;
-            padding: 16px 8px 6px;
-            border-top: 1px solid var(--border-light);
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .contact-email {
-            background: var(--btn-bg);
-            display: inline-block;
-            padding: 8px 28px;
-            border-radius: 50px;
-            border: 1px solid var(--border-light);
-            margin-top: 6px;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            text-decoration: none;
-        }
-
-        /* 弹窗样式保持原样 */
+        /* 所有弹窗遮罩 */
         .modal-overlay,
         .wechat-guide-overlay,
         .manual-copy-overlay,
         .wifi-qr-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(6px);
             display: flex;
@@ -423,9 +388,11 @@
     </style>
 </head>
 <body>
+
+    <!-- Toast 提示 -->
     <div class="toast-message" id="toastMessage"></div>
 
-    <!-- 微信内引导遮罩 -->
+    <!-- 微信内打开引导 -->
     <div class="wechat-guide-overlay" id="wechatGuideOverlay">
         <div class="modal-glass">
             <div style="font-size: 2.8rem; margin-bottom: 16px;">↗️</div>
@@ -468,31 +435,27 @@
             <div class="copy-wechat-hint">点击复制微信号，快速添加店长</div>
         </div>
 
-        <!-- Wi-Fi 一键连接 (由JS动态渲染) -->
+        <!-- Wi-Fi 模块（JS动态渲染） -->
         <div id="wifiContainer"></div>
 
-        <!-- 剩余好评数 -->
-        <div class="review-count-bar" id="reviewCountBar">
+        <!-- 好评剩余数量 -->
+        <div class="review-count-bar" id="reviewCountBar" style="display: none;">
             <span>📝 精选好评</span>
             <span class="count-badge" id="reviewCountBadge">0条</span>
         </div>
 
-        <!-- 好评列表容器 -->
+        <!-- 好评列表 -->
         <div id="reviewsContainer" class="reviews-list">
             <div class="review-card" style="justify-content:center;">⏳ 加载中...</div>
         </div>
 
-        <div class="browser-tip" id="browserTip">✨ 点击复制 → 选择平台 → 自动跳转对应APP</div>
-        <div class="contact-footer">
-            <span>📬 商务合作 · 好评宝</span>
-            <a href="tel:15617743996" class="contact-email">📞 156-1774-3996</a>
-        </div>
+        <div class="browser-tip">✨ 点击复制 → 选择平台 → 自动跳转对应APP</div>
     </div>
 
     <!-- 平台选择弹窗 -->
     <div class="modal-overlay" id="appChoiceModal">
         <div class="modal-glass">
-            <div class="modal-title" style="font-size:1.5rem; margin-bottom:24px;">选择跳转平台</div>
+            <div style="font-size:1.5rem; font-weight:600; margin-bottom:24px;">选择跳转平台</div>
             <div id="chooseDouyin" class="wifi-btn" style="margin-bottom:14px; justify-content:center;">
                 <i class="fab fa-tiktok"></i> 抖音
             </div>
@@ -504,65 +467,76 @@
     </div>
 
     <script>
-        (function() {
+        (() => {
+            // ==================== 固定配置 ====================
             const CLOUD_ENV = 'zp111-6gl1npyo592dd6e5';
             const REVIEWS_COLLECTION = 'reviews';
             const urlParams = new URLSearchParams(window.location.search);
             const shopId = urlParams.get('shopId') || 'billiard_001';
 
+            // ==================== 全局变量 ====================
             let cloudApp = null;
             let isCloudReady = false;
             let currentReviews = [];
             let selectedReviewId = null;
-            let currentWifi = { ssid: '', password: '' }; // 当前WIFI信息
+            let currentWifi = { ssid: '', password: '' };
 
+            // 环境/设备检测
             const ua = navigator.userAgent.toLowerCase();
             const isWeChat = /micromessenger/.test(ua);
             const isIOS = /iphone|ipad|ipod/.test(ua);
             const isAndroid = /android/.test(ua);
             const isMiBrowser = ua.includes('miui') || ua.includes('xiaomi');
 
-            // DOM 元素
-            const reviewsContainer = document.getElementById('reviewsContainer');
-            const modalOverlay = document.getElementById('appChoiceModal');
-            const chooseDouyin = document.getElementById('chooseDouyin');
-            const chooseMeituan = document.getElementById('chooseMeituan');
-            const closeModalBtn = document.getElementById('closeModal');
-            const toastMessage = document.getElementById('toastMessage');
-            const guideOverlay = document.getElementById('wechatGuideOverlay');
-            const manualCopyOverlay = document.getElementById('manualCopyOverlay');
-            const manualCopyText = document.getElementById('manualCopyText');
-            const manualCopyCloseBtn = document.getElementById('manualCopyCloseBtn');
-            const wechatNumberSpan = document.getElementById('wechatNumber');
+            // DOM 元素快捷获取
+            const $ = id => document.getElementById(id);
+            const toastMsg = $('toastMessage');
+            const reviewsContainer = $('reviewsContainer');
+            const modalOverlay = $('appChoiceModal');
+            const chooseDouyin = $('chooseDouyin');
+            const chooseMeituan = $('chooseMeituan');
+            const closeModalBtn = $('closeModal');
+            const guideOverlay = $('wechatGuideOverlay');
+            const guideConfirmBtn = $('guideConfirmBtn');
+            const manualOverlay = $('manualCopyOverlay');
+            const manualText = $('manualCopyText');
+            const manualCloseBtn = $('manualCopyCloseBtn');
+            const wechatNumberSpan = $('wechatNumber');
             const shopNameDiv = document.querySelector('.shop-name');
-            const reviewCountBadge = document.getElementById('reviewCountBadge');
-            const wifiContainer = document.getElementById('wifiContainer');
-            const wifiQrOverlay = document.getElementById('wifiQrOverlay');
-            const wifiQrCanvas = document.getElementById('wifiQrCanvas');
-            const wifiQrSsid = document.getElementById('wifiQrSsid');
-            const closeWifiQrBtn = document.getElementById('closeWifiQrBtn');
+            const reviewCountBar = $('reviewCountBar');
+            const reviewCountBadge = $('reviewCountBadge');
+            const wifiContainer = $('wifiContainer');
+            const wifiQrOverlay = $('wifiQrOverlay');
+            const wifiQrCanvas = $('wifiQrCanvas');
+            const wifiQrSsid = $('wifiQrSsid');
+            const closeWifiQrBtn = $('closeWifiQrBtn');
 
-            // --- UI 工具函数 ---
+            // ==================== 工具函数 ====================
             function showToast(msg, duration = 2500) {
-                toastMessage.style.display = 'block';
-                toastMessage.textContent = msg;
-                setTimeout(() => { toastMessage.style.display = 'none'; }, duration);
+                toastMsg.style.display = 'block';
+                toastMsg.textContent = msg;
+                setTimeout(() => { toastMsg.style.display = 'none'; }, duration);
             }
 
-            // 初始化云开发
+            function escapeHtml(str) {
+                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+                return str.replace(/[&<>]/g, m => map[m]);
+            }
+
+            // ==================== 云开发初始化 ====================
             async function initCloud() {
                 try {
                     cloudApp = cloudbase.init({ env: CLOUD_ENV });
                     await cloudApp.auth().signInAnonymously();
                     isCloudReady = true;
-                    console.log('云开发就绪');
+                    console.log('✅ 云开发初始化成功');
                 } catch (e) {
-                    console.error('云开发失败', e);
+                    console.error('❌ 云开发初始化失败', e);
                     isCloudReady = false;
                 }
             }
 
-            // 获取商家信息（店名、微信）
+            // ==================== 加载商家信息 ====================
             async function loadShopInfo() {
                 if (!isCloudReady) return;
                 try {
@@ -582,7 +556,7 @@
                 }
             }
 
-            // 获取 Wi-Fi 信息
+            // ==================== 加载 Wi-Fi 信息 ====================
             async function loadWifiInfo() {
                 if (!isCloudReady) return;
                 try {
@@ -604,14 +578,13 @@
                 renderWifiSection();
             }
 
-            // 渲染 Wi-Fi 卡片
             function renderWifiSection() {
                 if (!currentWifi.ssid) {
                     wifiContainer.innerHTML = '';
                     return;
                 }
                 const html = `
-                    <div class="wifi-section" id="wifiSectionBlock">
+                    <div class="wifi-section">
                         <div class="wifi-info">
                             <div class="wifi-icon-circle"><i class="fas fa-wifi"></i></div>
                             <div>
@@ -623,43 +596,32 @@
                             <button class="wifi-btn" id="connectWifiBtn"><i class="fas fa-plug"></i> 一键连</button>
                             <button class="wifi-btn" id="showQrBtn"><i class="fas fa-qrcode"></i> 扫码连</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 wifiContainer.innerHTML = html;
                 document.getElementById('connectWifiBtn')?.addEventListener('click', handleConnectWifi);
                 document.getElementById('showQrBtn')?.addEventListener('click', showWifiQrCode);
             }
 
-            // 尝试自动连接 Wi-Fi (通用方案：打开系统 Wi-Fi 设置并提示)
             function handleConnectWifi() {
-                // 复制密码以便粘贴
                 if (currentWifi.password && navigator.clipboard) {
                     navigator.clipboard.writeText(currentWifi.password).catch(() => {});
                 }
-                let settingUrl = '';
                 if (isIOS) {
-                    // iOS 已禁止直接跳转，只能提示
                     showToast('请手动打开“设置”>“无线局域网”连接', 3000);
-                    return;
                 } else if (isAndroid) {
-                    settingUrl = 'intent://#Intent;action=android.settings.WIFI_SETTINGS;end;';
-                } else {
-                    settingUrl = 'about:blank';
-                }
-                if (settingUrl) {
+                    const intentUrl = 'intent://#Intent;action=android.settings.WIFI_SETTINGS;end;';
                     const iframe = document.createElement('iframe');
                     iframe.style.display = 'none';
-                    iframe.src = settingUrl;
+                    iframe.src = intentUrl;
                     document.body.appendChild(iframe);
                     setTimeout(() => iframe.remove(), 400);
                 }
                 showToast(`Wi-Fi “${currentWifi.ssid}” 密码已复制，请手动连接`, 3500);
             }
 
-            // 显示 Wi-Fi 二维码
             function showWifiQrCode() {
                 wifiQrSsid.textContent = currentWifi.ssid;
-                wifiQrCanvas.innerHTML = ''; // 清空之前的
+                wifiQrCanvas.innerHTML = '';
                 const wifiString = `WIFI:T:WPA;S:${currentWifi.ssid};P:${currentWifi.password};;`;
                 new QRCode(wifiQrCanvas, {
                     text: wifiString,
@@ -673,17 +635,17 @@
             }
 
             closeWifiQrBtn.addEventListener('click', () => wifiQrOverlay.classList.remove('show'));
-            wifiQrOverlay.addEventListener('click', (e) => {
+            wifiQrOverlay.addEventListener('click', e => {
                 if (e.target === wifiQrOverlay) wifiQrOverlay.classList.remove('show');
             });
 
-            // 加载好评列表
+            // ==================== 好评加载与渲染 ====================
             async function loadReviews() {
                 if (!isCloudReady) return [];
                 try {
                     const db = cloudApp.database();
                     const res = await db.collection(REVIEWS_COLLECTION)
-                        .where({ shopId: shopId })
+                        .where({ shopId })
                         .orderBy('createTime', 'desc')
                         .get();
                     return res.data.map(doc => ({ id: doc._id, text: doc.text }));
@@ -694,28 +656,49 @@
 
             function renderReviews(reviews) {
                 if (!reviews.length) {
-                    reviewsContainer.innerHTML = '<div class="review-card" style="justify-content:center;">✨ 暂无好评，请联系管理员添加~</div>';
-                    reviewCountBadge.textContent = '0条';
+                    reviewsContainer.innerHTML = '<div class="review-card" style="justify-content:center;">✨ 暂无好评，请联系管理员购买</div>';
+                    reviewCountBar.style.display = 'none';
                     return;
                 }
+                reviewCountBar.style.display = 'flex';
+                // 最多显示5条，随机打乱
                 let shuffled = [...reviews];
                 if (shuffled.length > 5) {
-                    shuffled.sort(() => Math.random() - 0.5);
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
                     shuffled = shuffled.slice(0, 5);
                 }
                 let html = '';
                 shuffled.forEach(item => {
-                    html += `<div class="review-card"><span class="review-text">${escapeHtml(item.text)}</span><button class="copy-btn" data-id="${item.id}">复制</button></div>`;
+                    html += `<div class="review-card">
+                                <span class="review-text">${escapeHtml(item.text)}</span>
+                                <button class="copy-btn" data-id="${item.id}">复制</button>
+                             </div>`;
                 });
                 reviewsContainer.innerHTML = html;
                 reviewCountBadge.textContent = reviews.length + '条';
             }
 
-            function escapeHtml(str) {
-                return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+            // ==================== 删除好评（云函数调用） ====================
+            async function deleteReviewById(id) {
+                if (!isCloudReady) return false;
+                try {
+                    const res = await cloudApp.callFunction({
+                        name: 'deleteReview',
+                        data: {
+                            reviewId: id,
+                            shopId: shopId   // 传给云函数，优化查询
+                        }
+                    });
+                    return res.result.code === 0;
+                } catch (e) {
+                    return false;
+                }
             }
 
-            // 复制文本并尝试跳转 APP
+            // ==================== 复制文案并跳转 ====================
             function copyTextToClipboard(text, callback) {
                 if (isMiBrowser) {
                     const div = document.createElement('div');
@@ -733,7 +716,9 @@
                     });
                 } else {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(text).then(() => callback(true)).catch(() => fallbackCopy(text, callback));
+                        navigator.clipboard.writeText(text)
+                            .then(() => callback(true))
+                            .catch(() => fallbackCopy(text, callback));
                     } else {
                         fallbackCopy(text, callback);
                     }
@@ -747,38 +732,27 @@
                 textarea.style.opacity = '0';
                 document.body.appendChild(textarea);
                 textarea.select();
-                try { document.execCommand('copy'); document.body.removeChild(textarea); callback(true); return; } catch (e) {}
+                try {
+                    const success = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    if (success) { callback(true); return; }
+                } catch (e) {}
                 document.body.removeChild(textarea);
-                manualCopyText.textContent = text;
-                manualCopyOverlay.classList.add('show');
+                manualText.textContent = text;
+                manualOverlay.classList.add('show');
                 callback(false);
             }
 
-            manualCopyCloseBtn.addEventListener('click', () => manualCopyOverlay.classList.remove('show'));
+            manualCloseBtn.addEventListener('click', () => manualOverlay.classList.remove('show'));
 
-            // 删除好评（云函数）
-            async function deleteReviewById(id) {
-                if (!isCloudReady) return false;
-                try {
-                    const res = await cloudApp.callFunction({
-                        name: 'deleteReview',
-                        data: { reviewId: id }
-                    });
-                    return res.result.code === 0;
-                } catch (e) {
-                    return false;
-                }
-            }
-
-            // 点击微信区域 → 复制并尝试打开微信
+            // ==================== 微信区域点击 ====================
             document.getElementById('wechatArea').addEventListener('click', () => {
                 const wechat = wechatNumberSpan.innerText;
                 if (wechat && wechat !== '暂无微信号' && wechat !== '未配置') {
                     navigator.clipboard.writeText(wechat).catch(() => {});
-                    const scheme = 'weixin://';
                     const iframe = document.createElement('iframe');
                     iframe.style.display = 'none';
-                    iframe.src = scheme;
+                    iframe.src = 'weixin://';
                     document.body.appendChild(iframe);
                     setTimeout(() => iframe.remove(), 400);
                     showToast(`已复制微信号 ${wechat}，正在尝试打开微信`, 3000);
@@ -787,7 +761,7 @@
                 }
             });
 
-            // 平台跳转
+            // ==================== APP 跳转 ====================
             function jumpToApp(platform) {
                 const config = {
                     douyin: {
@@ -811,8 +785,9 @@
                 const handler = () => { launched = true; cleanup(); };
                 document.addEventListener('visibilitychange', handler);
                 window.addEventListener('blur', handler);
-                if (isIOS) window.location.href = config.universal;
-                else if (isAndroid) {
+                if (isIOS) {
+                    window.location.href = config.universal;
+                } else if (isAndroid) {
                     const iframe = document.createElement('iframe');
                     iframe.style.display = 'none';
                     iframe.src = config.intent;
@@ -821,11 +796,13 @@
                         iframe.remove();
                         if (!launched) window.location.href = config.fallback;
                     }, 2000);
-                } else window.location.href = config.fallback;
+                } else {
+                    window.location.href = config.fallback;
+                }
             }
 
-            // 好评复制按钮点击 -> 弹出平台选择
-            reviewsContainer.addEventListener('click', (e) => {
+            // ==================== 好评列表点击事件 ====================
+            reviewsContainer.addEventListener('click', e => {
                 const btn = e.target.closest('.copy-btn');
                 if (!btn) return;
                 selectedReviewId = btn.getAttribute('data-id');
@@ -836,55 +813,57 @@
             chooseDouyin.addEventListener('click', async () => {
                 if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
                 const review = currentReviews.find(r => r.id === selectedReviewId);
-                if (review) {
-                    copyTextToClipboard(review.text, async (success) => {
-                        const deleted = await deleteReviewById(selectedReviewId);
-                        if (deleted) {
-                            const newReviews = await loadReviews();
-                            currentReviews = newReviews;
-                            renderReviews(currentReviews);
-                            showToast('✅ 已复制，好评已使用', 2000);
-                        } else {
-                            showToast('⚠️ 复制成功，但删除失败', 3000);
-                        }
-                        modalOverlay.classList.remove('show');
-                        jumpToApp('douyin');
-                    });
-                }
+                if (!review) return;
+                copyTextToClipboard(review.text, async (success) => {
+                    const deleted = await deleteReviewById(selectedReviewId);
+                    if (deleted) {
+                        const newReviews = await loadReviews();
+                        currentReviews = newReviews;
+                        renderReviews(currentReviews);
+                        showToast('✅ 已复制，好评已使用', 2000);
+                    } else {
+                        showToast('⚠️ 复制成功，但删除失败，请重试', 3000);
+                    }
+                    modalOverlay.classList.remove('show');
+                    jumpToApp('douyin');
+                });
             });
 
             // 美团
             chooseMeituan.addEventListener('click', async () => {
                 if (!selectedReviewId) { modalOverlay.classList.remove('show'); return; }
                 const review = currentReviews.find(r => r.id === selectedReviewId);
-                if (review) {
-                    copyTextToClipboard(review.text, async (success) => {
-                        const deleted = await deleteReviewById(selectedReviewId);
-                        if (deleted) {
-                            const newReviews = await loadReviews();
-                            currentReviews = newReviews;
-                            renderReviews(currentReviews);
-                            showToast('✅ 已复制，好评已使用', 2000);
-                        } else {
-                            showToast('⚠️ 复制成功，但删除失败', 3000);
-                        }
-                        modalOverlay.classList.remove('show');
-                        jumpToApp('meituan');
-                    });
-                }
+                if (!review) return;
+                copyTextToClipboard(review.text, async (success) => {
+                    const deleted = await deleteReviewById(selectedReviewId);
+                    if (deleted) {
+                        const newReviews = await loadReviews();
+                        currentReviews = newReviews;
+                        renderReviews(currentReviews);
+                        showToast('✅ 已复制，好评已使用', 2000);
+                    } else {
+                        showToast('⚠️ 复制成功，但删除失败，请重试', 3000);
+                    }
+                    modalOverlay.classList.remove('show');
+                    jumpToApp('meituan');
+                });
             });
 
             closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('show'));
-            modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('show'); });
+            modalOverlay.addEventListener('click', e => {
+                if (e.target === modalOverlay) modalOverlay.classList.remove('show');
+            });
 
-            // 微信内引导
+            // 微信内提示
             if (isWeChat) {
                 setTimeout(() => guideOverlay.classList.add('show'), 300);
-                document.getElementById('guideConfirmBtn').addEventListener('click', () => guideOverlay.classList.remove('show'));
-                guideOverlay.addEventListener('click', (e) => { if (e.target === guideOverlay) guideOverlay.classList.remove('show'); });
+                guideConfirmBtn.addEventListener('click', () => guideOverlay.classList.remove('show'));
+                guideOverlay.addEventListener('click', e => {
+                    if (e.target === guideOverlay) guideOverlay.classList.remove('show');
+                });
             }
 
-            // 启动加载
+            // ==================== 启动 ====================
             (async function init() {
                 await initCloud();
                 if (isCloudReady) {
@@ -894,7 +873,7 @@
                     currentReviews = reviews;
                     renderReviews(currentReviews);
                 } else {
-                    reviewsContainer.innerHTML = '<div class="review-card" style="color:#ff6b6b;">初始化失败，请检查网络</div>';
+                    reviewsContainer.innerHTML = '<div class="review-card" style="color:#ff6b6b;">初始化失败，请检查网络或安全域名设置</div>';
                 }
             })();
         })();
